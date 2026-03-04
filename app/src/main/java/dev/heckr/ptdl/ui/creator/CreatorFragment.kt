@@ -38,6 +38,7 @@ class CreatorFragment : Fragment() {
     private var searchQuery = ""
 
     companion object {
+        private const val INITIAL_PAGE_SIZE = 5
         private const val PAGE_SIZE = 10
     }
 
@@ -141,7 +142,11 @@ class CreatorFragment : Fragment() {
                 }
             }
 
-            // Now stream posts — header is ready so rebuildList will include it
+            // Show header + collections immediately — no waiting for posts
+            binding.progressBar.isVisible = false
+            rebuildList()
+
+            // Stream posts in the background
             streamPosts(creatorUri)
         }
     }
@@ -153,12 +158,12 @@ class CreatorFragment : Fragment() {
         withContext(Dispatchers.IO) {
             flow.collect { post ->
                 allPosts.add(post)
-                if (!firstPageShown && allPosts.size >= PAGE_SIZE) {
+                // Show first small batch fast so the page feels instant
+                if (!firstPageShown && allPosts.size >= INITIAL_PAGE_SIZE) {
                     firstPageShown = true
                     withContext(Dispatchers.Main) {
                         if (_binding == null) return@withContext
-                        binding.progressBar.isVisible = false
-                        displayedCount = PAGE_SIZE
+                        displayedCount = INITIAL_PAGE_SIZE
                         rebuildList()
                     }
                 }
@@ -168,7 +173,6 @@ class CreatorFragment : Fragment() {
         if (_binding == null) return
         doneCollecting = true
         if (!firstPageShown) {
-            binding.progressBar.isVisible = false
             displayedCount = allPosts.size
         }
         rebuildList()

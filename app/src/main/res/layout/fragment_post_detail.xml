@@ -8,15 +8,11 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Loading -->
     <ProgressBar android:id="@+id/progress_bar" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:visibility="visible" app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-    <androidx.core.widget.NestedScrollView android:id="@+id/scroll_view" android:layout_width="match_parent" android:layout_height="match_parent" android:visibility="gone" app:layout_behavior="@string/appbar_scrolling_view_behavior">
+    <androidx.core.widget.NestedScrollView android:id="@+id/scroll_view" android:layout_width="match_parent" android:layout_height="match_parent" android:scrollbars="vertical" android:visibility="gone" app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
-
-            <!-- Images container (filled dynamically with padding) -->
-            <LinearLayout android:id="@+id/images_container" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:paddingTop="4dp" />
 
             <!-- Post info card -->
             <com.google.android.material.card.MaterialCardView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_margin="12dp" app:cardCornerRadius="16dp">
@@ -31,7 +27,6 @@
 
                     <com.google.android.material.divider.MaterialDivider android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:layout_marginBottom="8dp" />
 
-                    <!-- Stats row -->
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
 
                         <TextView android:id="@+id/like_count" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textAppearance="?attr/textAppearanceLabelMedium" android:textColor="?attr/colorOnSurfaceVariant" />
@@ -43,6 +38,12 @@
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
+
+            <!-- Attachments label -->
+            <TextView android:id="@+id/attachments_label" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingHorizontal="16dp" android:paddingBottom="8dp" android:textAppearance="?attr/textAppearanceLabelLarge" android:textColor="?attr/colorOnSurfaceVariant" android:visibility="gone" />
+
+            <!-- Thumbnail grid for attachments -->
+            <androidx.recyclerview.widget.RecyclerView android:id="@+id/attachments_grid" android:layout_width="match_parent" android:layout_height="wrap_content" android:clipToPadding="false" android:nestedScrollingEnabled="false" android:paddingHorizontal="12dp" android:paddingBottom="16dp" android:visibility="gone" />
 
         </LinearLayout>
 

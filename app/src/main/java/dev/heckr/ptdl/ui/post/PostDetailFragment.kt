@@ -2,7 +2,6 @@ package dev.heckr.ptdl.ui.post
 
 import android.net.Uri
 import android.os.Bundle
-import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,10 +10,14 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import coil.transform.RoundedCornersTransformation
+import dev.heckr.ptdl.R
 import dev.heckr.ptdl.data.LocalFileScanner
 import dev.heckr.ptdl.databinding.FragmentPostDetailBinding
+import dev.heckr.ptdl.databinding.ItemAttachmentThumbBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -57,12 +60,10 @@ class PostDetailFragment : Fragment() {
             binding.scrollView.isVisible = true
 
             binding.postTitle.text = detail.title
-            binding.toolbar.title = ""   // title shown in card below images
+            binding.toolbar.title = ""
 
-            val dateText = formatDate(detail.publishedAt)
-            binding.postDate.text = dateText
+            binding.postDate.text = formatDate(detail.publishedAt)
 
-            // Rich content rendering
             val richContent = when {
                 detail.contentJsonString.isNotBlank() && detail.contentJsonString != "null" ->
                     LocalFileScanner.parseContentJsonRich(detail.contentJsonString)
@@ -78,47 +79,26 @@ class PostDetailFragment : Fragment() {
             binding.likeCount.text = "♡  ${detail.likeCount}"
             binding.commentCount.text = "💬  ${detail.commentCount}"
 
-            // Populate images — add a small margin + rounded corners for polish
-            binding.imagesContainer.removeAllViews()
-            val cornerPx = TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, 12f, resources.displayMetrics
-            )
-            val marginPx = TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, 10f, resources.displayMetrics
-            ).toInt()
-            val spacingPx = TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, 6f, resources.displayMetrics
-            ).toInt()
-
+            // Thumbnail grid for attachments
             val imageUris = detail.imageUris
-            for ((index, uri) in imageUris.withIndex()) {
-                val imageView = ImageView(requireContext()).apply {
-                    layoutParams = ViewGroup.MarginLayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT
-                    ).also { lp ->
-                        lp.leftMargin = marginPx
-                        lp.rightMargin = marginPx
-                        lp.bottomMargin = if (index < imageUris.lastIndex) spacingPx else 0
-                    }
-                    adjustViewBounds = true
-                    scaleType = ImageView.ScaleType.FIT_CENTER
-                    clipToOutline = true
-                }
-                imageView.load(uri) {
-                    crossfade(true)
-                    transformations(RoundedCornersTransformation(cornerPx))
-                }
-                // Tap to open fullscreen viewer
-                imageView.setOnClickListener {
+            if (imageUris.isNotEmpty()) {
+                binding.attachmentsLabel.text = "${imageUris.size} attachment${if (imageUris.size != 1) "s" else ""}"
+                binding.attachmentsLabel.isVisible = true
+                binding.attachmentsGrid.isVisible = true
+
+                val spanCount = if (imageUris.size == 1) 2 else 3
+                binding.attachmentsGrid.layoutManager = GridLayoutManager(requireContext(), spanCount)
+                binding.attachmentsGrid.adapter = AttachmentGridAdapter(imageUris) { index ->
                     val uriStrings = imageUris.map { it.toString() }.toTypedArray()
-                    val intent = android.content.Intent(requireContext(), dev.heckr.ptdl.ui.viewer.ImageViewerActivity::class.java).apply {
+                    val intent = android.content.Intent(
+                        requireContext(),
+                        dev.heckr.ptdl.ui.viewer.ImageViewerActivity::class.java
+                    ).apply {
                         putExtra("imageUris", uriStrings)
                         putExtra("startIndex", index)
                     }
                     startActivity(intent)
                 }
-                binding.imagesContainer.addView(imageView)
             }
         }
     }
@@ -126,6 +106,56 @@ class PostDetailFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+}
+
+private class AttachmentGridAdapter(
+    private val uris: List<Uri>,
+    private val onClick: (Int) -> Unit
+) : RecyclerView.Adapter<AttachmentGridAdapter.VH>() {
+
+    override fun getItemCount() = uris.size
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+        val b = ItemAttachmentThumbBinding.inflate(
+            LayoutInflater.from(parent.context), parent, false
+        )
+        return VH(b)
+    }
+
+    override fun onBindViewHolder(holder: VH, position: Int) = holder.bind(position)
+
+    override fun onViewRecycled(holder: VH) {
+        holder.recycle()
+    }
+
+    inner class VH(private val b: ItemAttachmentThumbBinding) :
+        RecyclerView.ViewHolder(b.root) {
+
+        init {
+            // Add spacing via layout params
+            val spacing = (4 * b.root.resources.displayMetrics.density).toInt()
+            (b.root.layoutParams as? ViewGroup.MarginLayoutParams)?.let {
+                it.setMargins(spacing, spacing, spacing, spacing)
+            } ?: run {
+                b.root.layoutParams = ViewGroup.MarginLayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply { setMargins(spacing, spacing, spacing, spacing) }
+            }
+        }
+
+        fun bind(position: Int) {
+            b.attachmentThumb.load(uris[position]) {
+                crossfade(true)
+                size(300, 300)
+            }
+            b.root.setOnClickListener { onClick(position) }
+        }
+
+        fun recycle() {
+            b.attachmentThumb.setImageDrawable(null)
+        }
     }
 }
 
