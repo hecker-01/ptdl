@@ -56,6 +56,7 @@ android {
     }
     buildFeatures {
         buildConfig = true
+        viewBinding = true
     }
 }
 
@@ -74,6 +75,7 @@ dependencies {
     implementation(libs.json)
     implementation(libs.okhttp)
     implementation(libs.coil)
+    implementation(libs.androidx.documentfile)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -4,4 +4,7 @@
         <!-- Enable Material You dynamic colors -->
         <item name="android:forceDarkAllowed" tools:targetApi="q">true</item>
     </style>
+
+    <style name="Theme.PTDL" parent="Base.Theme.PTDL" />
+    <style name="Theme.PTDL.Dynamic" parent="Base.Theme.PTDL" />
 </resources>

@@ -1,43 +1,42 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<navigation
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/navigation_home"
->
+    app:startDestination="@id/navigation_home">
 
     <fragment
         android:id="@+id/navigation_home"
-        android:name="dev.heckr.ptdl.HomeFragment"
-        android:label="Home"
-        tools:layout="@layout/fragment_home"
-    />
-
-    <fragment
-        android:id="@+id/navigation_notifications"
-        android:name="dev.heckr.ptdl.NotificationsFragment"
-        android:label="Notifications"
-        tools:layout="@layout/fragment_notifications"
-    />
-
-    <fragment
-        android:id="@+id/navigation_profile"
-        android:name="dev.heckr.ptdl.ProfileFragment"
-        android:label="You"
-        tools:layout="@layout/fragment_profile"
-    >
+        android:name="dev.heckr.ptdl.ui.home.HomeFragment"
+        android:label="Home">
         <action
-            android:id="@+id/action_profile_to_settings"
-            app:destination="@id/settingsFragment"
-        />
+            android:id="@+id/action_home_to_creator"
+            app:destination="@id/creatorFragment" />
     </fragment>
 
     <fragment
-        android:id="@+id/settingsFragment"
-        android:name="dev.heckr.ptdl.SettingsFragment"
-        android:label="Settings"
-        tools:layout="@layout/fragment_settings"
-    />
+        android:id="@+id/navigation_profile"
+        android:name="dev.heckr.ptdl.ui.settings.SettingsFragment"
+        android:label="Settings" />
+
+    <fragment
+        android:id="@+id/creatorFragment"
+        android:name="dev.heckr.ptdl.ui.creator.CreatorFragment"
+        android:label="Creator">
+        <argument
+            android:name="creatorFolderUri"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_creator_to_post"
+            app:destination="@id/postDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/postDetailFragment"
+        android:name="dev.heckr.ptdl.ui.post.PostDetailFragment"
+        android:label="Post">
+        <argument
+            android:name="postFolderUri"
+            app:argType="string" />
+    </fragment>
 
 </navigation>
