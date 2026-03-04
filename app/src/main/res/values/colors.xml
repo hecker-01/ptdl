@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="ic_foreground">#E0E3FF</color>
+    <color name="ic_background">#5865F2</color>
+    <color name="ptdl_blue">#5865F2</color>
+    <color name="ptdl_blue_secondary">#4752C4</color>
+    <color name="ptdl_blue_tertiary">#9FA6FF</color>
+    <color name="ptdl_purple">#8B5CF6</color>
+    <color name="ptdl_purple_secondary">#7C3AED</color>
+    <color name="ptdl_purple_tertiary">#C4B5FD</color>
+    <color name="ptdl_green">#57F287</color>
+    <color name="ptdl_green_secondary">#22C55E</color>
+    <color name="ptdl_green_tertiary">#A7F3D0</color>
+    <color name="ptdl_red">#ED4245</color>
+    <color name="ptdl_red_secondary">#DC2626</color>
+    <color name="ptdl_red_tertiary">#FCA5A5</color>
+</resources>

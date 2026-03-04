@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="server_card_size">48dp</dimen>
+    <dimen name="server_card_radius">24dp</dimen>
+    <dimen name="server_selected_stroke">2dp</dimen>
+    <dimen name="channel_selected_stroke">2dp</dimen>
+    <dimen name="avatar_size">40dp</dimen>
+    <dimen name="voice_avatar_size">36dp</dimen>
+    <dimen name="server_indicator_width">4dp</dimen>
+    <dimen name="server_indicator_height">28dp</dimen>
+</resources>

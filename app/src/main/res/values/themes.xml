@@ -1,0 +1,45 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.PTDL" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Enable Material You dynamic colors -->
+        <item name="android:forceDarkAllowed" tools:targetApi="q">true</item>
+    </style>
+
+    <style name="Theme.PTDL" parent="Base.Theme.PTDL">
+        <item name="colorPrimary">@color/ptdl_blue</item>
+        <item name="colorSecondary">@color/ptdl_blue_secondary</item>
+        <item name="colorTertiary">@color/ptdl_blue_tertiary</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorOnTertiary">@color/white</item>
+    </style>
+
+    <style name="Theme.PTDL.Dynamic" parent="Base.Theme.PTDL" />
+
+    <style name="Theme.PTDL.Purple" parent="Base.Theme.PTDL">
+        <item name="colorPrimary">@color/ptdl_purple</item>
+        <item name="colorSecondary">@color/ptdl_purple_secondary</item>
+        <item name="colorTertiary">@color/ptdl_purple_tertiary</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorOnTertiary">@color/white</item>
+    </style>
+
+    <style name="Theme.PTDL.Green" parent="Base.Theme.PTDL">
+        <item name="colorPrimary">@color/ptdl_green</item>
+        <item name="colorSecondary">@color/ptdl_green_secondary</item>
+        <item name="colorTertiary">@color/ptdl_green_tertiary</item>
+        <item name="colorOnPrimary">@color/black</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorOnTertiary">@color/black</item>
+    </style>
+
+    <style name="Theme.PTDL.Red" parent="Base.Theme.PTDL">
+        <item name="colorPrimary">@color/ptdl_red</item>
+        <item name="colorSecondary">@color/ptdl_red_secondary</item>
+        <item name="colorTertiary">@color/ptdl_red_tertiary</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorOnTertiary">@color/black</item>
+    </style>
+</resources>

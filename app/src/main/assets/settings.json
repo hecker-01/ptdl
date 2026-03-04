@@ -1,0 +1,174 @@
+{
+  "categories": [
+    {
+      "id": "build_info",
+      "title": "BUILD INFO",
+      "items": [
+        {
+          "type": "info",
+          "id": "build_number",
+          "title": "Build Number",
+          "icon": "icon_commit",
+          "dynamic": true
+        }
+      ]
+    },
+    {
+      "id": "app_updates",
+      "title": "APP UPDATES",
+      "items": [
+        {
+          "type": "action",
+          "id": "check_updates",
+          "title": "Check for Updates",
+          "subtitle": "Tap to check for updates",
+          "icon": "icon_download",
+          "dynamic": true
+        }
+      ]
+    },
+    {
+      "id": "discord",
+      "title": "DISCORD",
+      "items": [
+        {
+          "type": "action",
+          "id": "discord_token",
+          "title": "Bot Token",
+          "subtitle": "Not set",
+          "icon": "icon_account_circle",
+          "dynamic": true
+        }
+      ]
+    },
+    {
+      "id": "appearance",
+      "title": "APPEARANCE",
+      "items": [
+        {
+          "type": "toggle",
+          "id": "dark_mode",
+          "title": "Dark Mode",
+          "subtitle": "Enable dark theme",
+          "icon": "icon_settings",
+          "default": false,
+          "key": "pref_dark_mode"
+        },
+        {
+          "type": "selection",
+          "id": "theme_color",
+          "title": "Theme Color",
+          "subtitle": "Choose accent color",
+          "icon": "icon_commit",
+          "key": "pref_theme_color",
+          "options": [
+            { "value": "dynamic", "label": "Material You" },
+            { "value": "blue", "label": "Blue" },
+            { "value": "purple", "label": "Purple" },
+            { "value": "green", "label": "Green" },
+            { "value": "red", "label": "Red" }
+          ],
+          "default": "dynamic"
+        }
+      ]
+    },
+    {
+      "id": "notifications",
+      "title": "NOTIFICATIONS",
+      "items": [
+        {
+          "type": "toggle",
+          "id": "notifications_enabled",
+          "title": "Enable Notifications",
+          "subtitle": "Receive app notifications",
+          "icon": "icon_notifications",
+          "default": true,
+          "key": "pref_notifications_enabled"
+        },
+        {
+          "type": "toggle",
+          "id": "sound_enabled",
+          "title": "Sound",
+          "subtitle": "Play notification sounds",
+          "icon": "icon_notifications",
+          "default": true,
+          "key": "pref_sound_enabled"
+        },
+        {
+          "type": "subpage",
+          "id": "advanced_notifications",
+          "title": "Advanced Settings",
+          "subtitle": "Configure detailed notification preferences",
+          "icon": "icon_settings",
+          "page": "notifications_advanced"
+        }
+      ]
+    },
+    {
+      "id": "privacy",
+      "title": "PRIVACY & SECURITY",
+      "items": [
+        {
+          "type": "toggle",
+          "id": "analytics_enabled",
+          "title": "Analytics",
+          "subtitle": "Help improve the app",
+          "icon": "icon_commit",
+          "default": false,
+          "key": "pref_analytics_enabled"
+        },
+        {
+          "type": "toggle",
+          "id": "crash_reports",
+          "title": "Crash Reports",
+          "subtitle": "Send crash reports automatically",
+          "icon": "icon_commit",
+          "default": true,
+          "key": "pref_crash_reports"
+        }
+      ]
+    }
+  ],
+  "subpages": {
+    "notifications_advanced": {
+      "title": "Advanced Notifications",
+      "categories": [
+        {
+          "id": "channels",
+          "title": "NOTIFICATION CHANNELS",
+          "items": [
+            {
+              "type": "toggle",
+              "id": "messages_channel",
+              "title": "Messages",
+              "subtitle": "Notifications for new messages",
+              "default": true,
+              "key": "pref_channel_messages"
+            },
+            {
+              "type": "toggle",
+              "id": "updates_channel",
+              "title": "Updates",
+              "subtitle": "App update notifications",
+              "default": true,
+              "key": "pref_channel_updates"
+            },
+            {
+              "type": "selection",
+              "id": "priority",
+              "title": "Priority",
+              "subtitle": "Notification importance",
+              "key": "pref_notification_priority",
+              "options": [
+                { "value": "low", "label": "Low" },
+                { "value": "default", "label": "Default" },
+                { "value": "high", "label": "High" }
+              ],
+              "default": "default"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
