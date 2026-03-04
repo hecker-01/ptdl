@@ -3,13 +3,6 @@ plugins {
     alias(libs.plugins.kotlin.android)
 }
 
-val discordBotToken = ((project.findProperty("DISCORD_BOT_TOKEN") as String?)
-    ?: System.getenv("DISCORD_BOT_TOKEN")
-    ?: "").trim()
-val escapedDiscordBotToken = discordBotToken
-    .replace("\\", "\\\\")
-    .replace("\"", "\\\"")
-
 android {
     namespace = "dev.heckr.ptdl"
     compileSdk = 36
@@ -18,11 +11,10 @@ android {
         applicationId = "dev.heckr.ptdl"
         minSdk = 31
         targetSdk = 36
-        versionCode = 3
-        versionName = "0.1.0-alpha"
+        versionCode = 1
+        versionName = "0.0.1-alpha"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField("String", "DISCORD_BOT_TOKEN", "\"$escapedDiscordBotToken\"")
     }
 
     signingConfigs {
