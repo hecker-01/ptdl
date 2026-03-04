@@ -75,7 +75,7 @@ class HomeFragment : Fragment() {
 
         val rootUri = Uri.parse(uriString)
 
-        // Show cached data immediately — no spinner needed if we already have results
+        // Show cached data immediately - no spinner needed if we already have results
         val cached = PatreonRepository.getCachedCreators()
         if (cached.isNotEmpty()) {
             binding.progressBar.isVisible = false
@@ -93,7 +93,7 @@ class HomeFragment : Fragment() {
             return
         }
 
-        // No cache yet — show spinner
+        // No cache yet - show spinner
         binding.progressBar.isVisible = true
         binding.emptyState.isVisible = false
         binding.creatorsRecycler.isVisible = false

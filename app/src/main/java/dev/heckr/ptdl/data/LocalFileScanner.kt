@@ -99,7 +99,7 @@ object LocalFileScanner {
     }
 
     /**
-     * Streaming version — emits each [PostInfo] as soon as it's parsed,
+     * Streaming version - emits each [PostInfo] as soon as it's parsed,
      * using parallel workers for faster throughput.
      */
     fun scanPostsFlow(context: Context, creatorFolderUri: Uri): Flow<PostInfo> = flow {

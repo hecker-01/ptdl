@@ -49,7 +49,7 @@ object PatreonRepository {
     }
 
     /**
-     * Suspending version of warmUp — awaits the full index (creators + all posts)
+     * Suspending version of warmUp - awaits the full index (creators + all posts)
      * and returns the total number of posts found.
      * [onCreatorProgress] fires after discovery (done=0) and after each creator scan.
      * [onPostProgress] fires with the running total of posts found so far.
@@ -95,7 +95,7 @@ object PatreonRepository {
     fun getCachedCreators(): List<CreatorInfo> = cachedCreators
 
     /**
-     * Loads creators — returns from cache instantly if available,
+     * Loads creators - returns from cache instantly if available,
      * otherwise does the scan and caches the result.
      */
     suspend fun loadCreators(context: Context, rootUri: Uri): List<CreatorInfo> {
@@ -110,7 +110,7 @@ object PatreonRepository {
     }
 
     /**
-     * Loads posts — returns from cache instantly if available,
+     * Loads posts - returns from cache instantly if available,
      * otherwise scans and caches.
      */
     suspend fun loadPosts(context: Context, creatorUri: Uri): List<PostInfo> {

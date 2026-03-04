@@ -34,7 +34,7 @@ class ImageViewerActivity : AppCompatActivity() {
         val indicator = findViewById<android.widget.TextView>(R.id.page_indicator)
         val closeBtn = findViewById<ImageView>(R.id.btn_close)
 
-        // Only keep current page in memory — load/unload on demand
+        // Only keep current page in memory - load/unload on demand
         viewPager.offscreenPageLimit = 1
         viewPager.adapter = ImagePagerAdapter(uris)
         viewPager.setCurrentItem(startIndex, false)
