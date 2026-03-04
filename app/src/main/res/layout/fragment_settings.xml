@@ -35,6 +35,29 @@
 
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Section: Appearance -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:paddingBottom="8dp" android:text="Appearance" android:textAppearance="?attr/textAppearanceLabelLarge" android:textColor="?attr/colorPrimary" />
+
+            <com.google.android.material.card.MaterialCardView android:layout_width="match_parent" android:layout_height="wrap_content" app:cardCornerRadius="12dp">
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
+
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Theme" android:textAppearance="?attr/textAppearanceTitleSmall" />
+
+                    <com.google.android.material.button.MaterialButtonToggleGroup android:id="@+id/theme_toggle_group" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" app:singleSelection="true" app:selectionRequired="true">
+
+                        <com.google.android.material.button.MaterialButton android:id="@+id/btn_theme_system" style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="System" />
+
+                        <com.google.android.material.button.MaterialButton android:id="@+id/btn_theme_light" style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Light" />
+
+                        <com.google.android.material.button.MaterialButton android:id="@+id/btn_theme_dark" style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Dark" />
+
+                    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- Section: About -->
             <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:paddingBottom="8dp" android:text="About" android:textAppearance="?attr/textAppearanceLabelLarge" android:textColor="?attr/colorPrimary" />
 
@@ -59,9 +82,13 @@
 
         <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:orientation="vertical" android:gravity="center" android:padding="24dp">
 
-            <com.google.android.material.progressindicator.LinearProgressIndicator android:id="@+id/indexing_progress" android:layout_width="260dp" android:layout_height="wrap_content" android:indeterminate="true" app:indicatorColor="?attr/colorPrimary" app:trackColor="#44FFFFFF" />
+            <TextView android:id="@+id/indexing_status" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Indexing folder…" android:textAppearance="?attr/textAppearanceBodyMedium" android:textColor="#FFFFFFFF" />
 
-            <TextView android:id="@+id/indexing_status" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:text="Indexing folder…" android:textAppearance="?attr/textAppearanceBodyMedium" android:textColor="#FFFFFFFF" />
+            <com.google.android.material.progressindicator.LinearProgressIndicator android:id="@+id/indexing_progress" android:layout_width="260dp" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:indeterminate="true" app:indicatorColor="?attr/colorPrimary" app:trackColor="#44FFFFFF" />
+
+            <TextView android:id="@+id/indexing_post_status" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:text="" android:textAppearance="?attr/textAppearanceBodySmall" android:textColor="#CCFFFFFF" android:visibility="gone" />
+
+            <com.google.android.material.progressindicator.LinearProgressIndicator android:id="@+id/indexing_post_progress" android:layout_width="260dp" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:indeterminate="true" app:indicatorColor="@android:color/white" app:trackColor="#33FFFFFF" android:visibility="gone" />
 
         </LinearLayout>
 

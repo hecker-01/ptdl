@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import dev.heckr.ptdl.R
 import dev.heckr.ptdl.data.PatreonRepository
 import dev.heckr.ptdl.databinding.FragmentHomeBinding
@@ -55,7 +56,8 @@ class HomeFragment : Fragment() {
         binding.creatorsRecycler.adapter = adapter
 
         binding.btnSelectFolder.setOnClickListener {
-            findNavController().navigate(R.id.navigation_profile)
+            requireActivity().findViewById<BottomNavigationView>(R.id.bottom_navigation)
+                .selectedItemId = R.id.navigation_profile
         }
     }
 

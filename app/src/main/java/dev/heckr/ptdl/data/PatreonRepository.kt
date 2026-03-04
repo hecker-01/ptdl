@@ -10,6 +10,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
@@ -50,13 +51,14 @@ object PatreonRepository {
     /**
      * Suspending version of warmUp — awaits the full index (creators + all posts)
      * and returns the total number of posts found.
-     * [onProgress] is called after creator discovery (done=0) and after each
-     * creator's posts finish scanning (done=1..total). Safe to do UI work inside it.
+     * [onCreatorProgress] fires after discovery (done=0) and after each creator scan.
+     * [onPostProgress] fires with the running total of posts found so far.
      */
     suspend fun warmUpAwait(
         context: Context,
         rootUri: Uri,
-        onProgress: (suspend (done: Int, total: Int) -> Unit)? = null
+        onCreatorProgress: (suspend (done: Int, total: Int) -> Unit)? = null,
+        onPostProgress: (suspend (postsSoFar: Int) -> Unit)? = null
     ): Int = coroutineScope {
         val appContext = context.applicationContext
         val newUriStr = rootUri.toString()
@@ -64,16 +66,25 @@ object PatreonRepository {
         cachedRootUri = newUriStr
         cachedCreators = creators
         val total = creators.size
-        onProgress?.invoke(0, total)
+        onCreatorProgress?.invoke(0, total)
 
-        val done = AtomicInteger(0)
+        val creatorsDone = AtomicInteger(0)
+        val totalPosts = AtomicInteger(0)
         val jobs = creators.map { creator ->
             async {
                 val key = creator.folderUri.toString()
-                val posts = LocalFileScanner.scanPosts(appContext, creator.folderUri)
-                postsCache[key] = posts
-                preloadThumbnails(appContext, posts)
-                onProgress?.invoke(done.incrementAndGet(), total)
+                val posts = mutableListOf<PostInfo>()
+                // Stream posts so the counter updates live per-post
+                LocalFileScanner.scanPostsFlow(appContext, creator.folderUri)
+                    .collect { post ->
+                        posts.add(post)
+                        val running = totalPosts.incrementAndGet()
+                        onPostProgress?.invoke(running)
+                    }
+                val sorted = posts.sortedByDescending { it.publishedAt }
+                postsCache[key] = sorted
+                preloadThumbnails(appContext, sorted)
+                onCreatorProgress?.invoke(creatorsDone.incrementAndGet(), total)
                 posts.size
             }
         }
@@ -110,6 +121,23 @@ object PatreonRepository {
         return posts
     }
 
+    /**
+     * Returns a Flow that streams posts one-by-one using SAF.
+     * The first N posts arrive fast while the rest continue scanning.
+     * If cached, emits from cache instead.
+     */
+    fun loadPostsFlow(context: Context, creatorUri: Uri): Flow<PostInfo> {
+        val key = creatorUri.toString()
+        val cached = postsCache[key]
+        return if (cached != null) {
+            kotlinx.coroutines.flow.flow {
+                cached.forEach { emit(it) }
+            }
+        } else {
+            LocalFileScanner.scanPostsFlow(context, creatorUri)
+        }
+    }
+
     /** Pre-warms the post list for a creator (fire-and-forget). */
     fun prefetchPosts(context: Context, creatorUri: Uri) {
         val key = creatorUri.toString()
@@ -120,6 +148,14 @@ object PatreonRepository {
             postsCache[key] = posts
             preloadThumbnails(appContext, posts)
         }
+    }
+
+    /** Returns the cached post list for a creator URI key, or null if not cached. */
+    fun getCachedPosts(key: String): List<PostInfo>? = postsCache[key]
+
+    /** Stores a fully-scanned post list in the cache. */
+    fun cachePosts(key: String, posts: List<PostInfo>) {
+        postsCache[key] = posts
     }
 
     /** Call when the user changes the root folder. */

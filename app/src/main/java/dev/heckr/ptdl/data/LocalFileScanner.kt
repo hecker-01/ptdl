@@ -2,7 +2,18 @@ package dev.heckr.ptdl.data
 
 import android.content.Context
 import android.net.Uri
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.style.RelativeSizeSpan
+import android.text.style.StyleSpan
+import android.text.style.UnderlineSpan
 import androidx.documentfile.provider.DocumentFile
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -70,13 +81,33 @@ object LocalFileScanner {
 
     // ─── Post scanning ───────────────────────────────────────────────────────
 
-    fun scanPosts(context: Context, creatorFolderUri: Uri): List<PostInfo> {
-        val creatorDoc = DocumentFile.fromTreeUri(context, creatorFolderUri) ?: return emptyList()
-        val postsDir = creatorDoc.findFile("posts") ?: return emptyList()
-        return postsDir.listFiles()
+    suspend fun scanPosts(context: Context, creatorFolderUri: Uri): List<PostInfo> = coroutineScope {
+        val creatorDoc = DocumentFile.fromTreeUri(context, creatorFolderUri) ?: return@coroutineScope emptyList()
+        val postsDir = creatorDoc.findFile("posts") ?: return@coroutineScope emptyList()
+        val folders = postsDir.listFiles()
             .filter { it.isDirectory && it.name?.startsWith(".") == false }
-            .mapNotNull { parsePostShallow(context, it) }
-            .sortedByDescending { it.publishedAt }
+        // Parse in parallel chunks of 8 for much faster SAF throughput
+        folders.chunked(8).flatMap { chunk ->
+            chunk.map { folder ->
+                async(Dispatchers.IO) { parsePostShallow(context, folder) }
+            }.awaitAll().filterNotNull()
+        }.sortedByDescending { it.publishedAt }
+    }
+
+    /**
+     * Streaming version — emits each [PostInfo] as soon as it's parsed.
+     * Consumers can take the first N without waiting for the full list.
+     */
+    fun scanPostsFlow(context: Context, creatorFolderUri: Uri): Flow<PostInfo> = flow {
+        val creatorDoc = DocumentFile.fromTreeUri(context, creatorFolderUri) ?: return@flow
+        val postsDir = creatorDoc.findFile("posts") ?: return@flow
+        val folders = postsDir.listFiles()
+            .filter { it.isDirectory && it.name?.startsWith(".") == false }
+        // Sort by folder name descending (id prefix gives chronological order)
+        folders.sortedByDescending { it.name }
+            .forEach { folder ->
+                parsePostShallow(context, folder)?.let { emit(it) }
+            }
     }
 
     private fun parsePostShallow(context: Context, postFolder: DocumentFile): PostInfo? {
@@ -133,6 +164,8 @@ object LocalFileScanner {
     data class PostDetail(
         val title: String,
         val content: String,
+        val contentJsonString: String,
+        val contentHtml: String,
         val publishedAt: String,
         val likeCount: Int,
         val commentCount: Int,
@@ -143,10 +176,12 @@ object LocalFileScanner {
 
     fun loadPostDetail(context: Context, postFolderUri: Uri): PostDetail {
         val postDoc = DocumentFile.fromTreeUri(context, postFolderUri)
-            ?: return PostDetail("", "", "", 0, 0, "text_only", false, emptyList())
+            ?: return PostDetail("", "", "", "", "", 0, 0, "text_only", false, emptyList())
 
         var title = ""
         var content = ""
+        var contentJsonString = ""
+        var contentHtml = ""
         var publishedAt = ""
         var likeCount = 0
         var commentCount = 0
@@ -168,18 +203,19 @@ object LocalFileScanner {
                     postType = attrs.optString("post_type", "text_only")
                     canView = attrs.optBoolean("current_user_can_view", true)
 
-                    val contentJson = attrs.optString("content_json_string", "")
-                    content = if (contentJson.isNotBlank() && contentJson != "null") {
-                        parseContentJson(contentJson)
+                    contentJsonString = attrs.optString("content_json_string", "")
+                    contentHtml = attrs.optString("content", "")
+                    content = if (contentJsonString.isNotBlank() && contentJsonString != "null") {
+                        parseContentJson(contentJsonString)
                     } else {
-                        stripHtml(attrs.optString("content", ""))
+                        stripHtml(contentHtml)
                     }
                 } catch (_: Exception) {}
             }
         }
 
         val imageUris = scanPostImages(context, postFolderUri)
-        return PostDetail(title, content, publishedAt, likeCount, commentCount, postType, canView, imageUris)
+        return PostDetail(title, content, contentJsonString, contentHtml, publishedAt, likeCount, commentCount, postType, canView, imageUris)
     }
 
     fun scanPostImages(context: Context, postFolderUri: Uri): List<Uri> {
@@ -210,6 +246,130 @@ object LocalFileScanner {
         } catch (_: Exception) {
             jsonString
         }
+    }
+
+    /**
+     * Parses content_json_string into a styled [CharSequence] with bold, italic,
+     * underline, and heading sizes preserved.
+     */
+    fun parseContentJsonRich(jsonString: String): CharSequence {
+        if (jsonString.isBlank() || jsonString == "null") return ""
+        return try {
+            val sb = SpannableStringBuilder()
+            extractRichText(JSONObject(jsonString), sb)
+            sb
+        } catch (_: Exception) {
+            jsonString
+        }
+    }
+
+    private fun extractRichText(node: JSONObject, sb: SpannableStringBuilder) {
+        val type = node.optString("type", "")
+        val text = node.optString("text", "")
+
+        if (text.isNotEmpty()) {
+            val start = sb.length
+            sb.append(text)
+            // Apply marks (bold, italic, underline)
+            val marks = node.optJSONArray("marks")
+            if (marks != null) {
+                for (i in 0 until marks.length()) {
+                    when (marks.getJSONObject(i).optString("type")) {
+                        "bold" -> sb.setSpan(StyleSpan(android.graphics.Typeface.BOLD), start, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                        "italic" -> sb.setSpan(StyleSpan(android.graphics.Typeface.ITALIC), start, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                        "underline" -> sb.setSpan(UnderlineSpan(), start, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    }
+                }
+            }
+            return
+        }
+
+        val content = node.optJSONArray("content") ?: return
+        val startPos = sb.length
+        for (i in 0 until content.length()) {
+            try { extractRichText(content.getJSONObject(i), sb) } catch (_: Exception) {}
+        }
+        when (type) {
+            "paragraph" -> sb.append("\n")
+            "heading" -> {
+                val level = node.optJSONObject("attrs")?.optInt("level", 2) ?: 2
+                val scale = when (level) { 1 -> 1.5f; 2 -> 1.3f; 3 -> 1.15f; else -> 1.0f }
+                sb.setSpan(RelativeSizeSpan(scale), startPos, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                sb.setSpan(StyleSpan(android.graphics.Typeface.BOLD), startPos, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                sb.append("\n")
+            }
+        }
+    }
+
+    /** Parses HTML content into a styled [CharSequence]. */
+    fun parseHtmlRich(html: String): CharSequence {
+        if (html.isBlank()) return ""
+        return androidx.core.text.HtmlCompat.fromHtml(html, androidx.core.text.HtmlCompat.FROM_HTML_MODE_COMPACT)
+    }
+
+    // ─── Collection scanning ─────────────────────────────────────────────────
+
+    fun scanCollections(context: Context, creatorFolderUri: Uri): List<CollectionInfo> {
+        val creatorDoc = DocumentFile.fromTreeUri(context, creatorFolderUri) ?: return emptyList()
+        val collectionsDir = creatorDoc.findFile("collections") ?: return emptyList()
+        return collectionsDir.listFiles()
+            .filter { it.isDirectory && it.name?.startsWith(".") == false }
+            .mapNotNull { parseCollection(context, it) }
+            .sortedBy { it.title.lowercase() }
+    }
+
+    private fun parseCollection(context: Context, folder: DocumentFile): CollectionInfo? {
+        val folderName = folder.name ?: return null
+        val parts = folderName.split(" - ", limit = 2)
+        val idFromFolder = parts[0].trim()
+        val titleFromFolder = if (parts.size > 1) parts[1].trim() else folderName
+
+        var id = idFromFolder
+        var title = titleFromFolder
+        var description = ""
+        var postCount = 0
+        var postIds = emptyList<Long>()
+        var thumbnailUrl: String? = null
+        var thumbnailUri: Uri? = null
+
+        // Look for local thumbnail image
+        val thumbFile = folder.listFiles().firstOrNull {
+            it.isFile && it.name?.startsWith("collection-") == true &&
+                it.name?.substringAfterLast('.', "")?.lowercase() in setOf("png", "jpg", "jpeg", "webp")
+        }
+        if (thumbFile != null) thumbnailUri = thumbFile.uri
+
+        val apiFile = folder.findFile("collection-api.json")
+        if (apiFile != null) {
+            try {
+                val json = readFile(context, apiFile)
+                val root = JSONObject(json)
+                id = root.optString("id", idFromFolder)
+                val attrs = root.getJSONObject("attributes")
+                title = attrs.optString("title", titleFromFolder).ifBlank { titleFromFolder }
+                description = attrs.optString("description", "")
+                postCount = attrs.optInt("num_posts", 0)
+                val idsArr = attrs.optJSONArray("post_ids")
+                if (idsArr != null) {
+                    postIds = (0 until idsArr.length()).map { idsArr.getLong(it) }
+                }
+                val thumb = attrs.optJSONObject("thumbnail")
+                if (thumb != null) {
+                    thumbnailUrl = thumb.optString("default", "").ifBlank { null }
+                }
+            } catch (_: Exception) {}
+        }
+
+        return CollectionInfo(
+            id = id,
+            title = title,
+            description = description,
+            postCount = postCount,
+            postIds = postIds,
+            thumbnailUri = thumbnailUri,
+            thumbnailUrl = thumbnailUrl,
+            folderUri = folder.uri
+        )
     }
 
     private fun extractText(node: JSONObject): String {

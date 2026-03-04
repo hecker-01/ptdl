@@ -62,8 +62,16 @@ class PostDetailFragment : Fragment() {
             val dateText = formatDate(detail.publishedAt)
             binding.postDate.text = dateText
 
-            if (detail.content.isNotBlank()) {
-                binding.postContent.text = detail.content.trim()
+            // Rich content rendering
+            val richContent = when {
+                detail.contentJsonString.isNotBlank() && detail.contentJsonString != "null" ->
+                    LocalFileScanner.parseContentJsonRich(detail.contentJsonString)
+                detail.contentHtml.isNotBlank() ->
+                    LocalFileScanner.parseHtmlRich(detail.contentHtml)
+                else -> detail.content.trim()
+            }
+            if (richContent.isNotBlank()) {
+                binding.postContent.text = richContent
                 binding.postContent.isVisible = true
             }
 
@@ -82,7 +90,8 @@ class PostDetailFragment : Fragment() {
                 TypedValue.COMPLEX_UNIT_DIP, 6f, resources.displayMetrics
             ).toInt()
 
-            for ((index, uri) in detail.imageUris.withIndex()) {
+            val imageUris = detail.imageUris
+            for ((index, uri) in imageUris.withIndex()) {
                 val imageView = ImageView(requireContext()).apply {
                     layoutParams = ViewGroup.MarginLayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
@@ -90,7 +99,7 @@ class PostDetailFragment : Fragment() {
                     ).also { lp ->
                         lp.leftMargin = marginPx
                         lp.rightMargin = marginPx
-                        lp.bottomMargin = if (index < detail.imageUris.lastIndex) spacingPx else 0
+                        lp.bottomMargin = if (index < imageUris.lastIndex) spacingPx else 0
                     }
                     adjustViewBounds = true
                     scaleType = ImageView.ScaleType.FIT_CENTER
@@ -99,6 +108,15 @@ class PostDetailFragment : Fragment() {
                 imageView.load(uri) {
                     crossfade(true)
                     transformations(RoundedCornersTransformation(cornerPx))
+                }
+                // Tap to open fullscreen viewer
+                imageView.setOnClickListener {
+                    val uriStrings = imageUris.map { it.toString() }.toTypedArray()
+                    val intent = android.content.Intent(requireContext(), dev.heckr.ptdl.ui.viewer.ImageViewerActivity::class.java).apply {
+                        putExtra("imageUris", uriStrings)
+                        putExtra("startIndex", index)
+                    }
+                    startActivity(intent)
                 }
                 binding.imagesContainer.addView(imageView)
             }
