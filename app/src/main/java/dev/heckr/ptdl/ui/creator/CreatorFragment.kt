@@ -20,6 +20,7 @@ import dev.heckr.ptdl.data.PatreonRepository
 import dev.heckr.ptdl.data.PostInfo
 import dev.heckr.ptdl.databinding.FragmentCreatorBinding
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -100,26 +101,26 @@ class CreatorFragment : Fragment() {
         loadCreator(creatorUri)
     }
 
-    private fun loadCreator(creatorUri: Uri) {
-        binding.progressBar.isVisible = true
+    private var collectionsLoaded = false
+    private var postsLoading = false
 
-        // Reset state in case the fragment is reused
+    private fun loadCreator(creatorUri: Uri) {
+        // Reset state
         allPosts.clear()
         collections = emptyList()
         headerItem = null
         displayedCount = 0
         doneCollecting = false
         searchQuery = ""
+        collectionsLoaded = false
+        postsLoading = false
 
-        // Load creator info + collections FIRST, then stream posts
         viewLifecycleOwner.lifecycleScope.launch {
-            val (creator, cols) = withContext(Dispatchers.IO) {
-                val c = LocalFileScanner.parseCreatorFromUri(requireContext(), creatorUri)
-                val cols = LocalFileScanner.scanCollections(requireContext(), creatorUri)
-                c to cols
+            // ── Step 1: Load profile info (fast) ──
+            val creator = withContext(Dispatchers.IO) {
+                LocalFileScanner.parseCreatorFromUri(requireContext(), creatorUri)
             }
             if (_binding == null) return@launch
-            collections = cols
 
             if (creator != null) {
                 val meta = buildString {
@@ -142,12 +143,26 @@ class CreatorFragment : Fragment() {
                 }
             }
 
-            // Show header + collections immediately — no waiting for posts
-            binding.progressBar.isVisible = false
+            // Show header + skeleton placeholders for collections & posts
             rebuildList()
 
-            // Stream posts in the background
-            streamPosts(creatorUri)
+            // ── Step 2: Load collections + start post streaming in parallel ──
+            val collectionsDeferred = async(Dispatchers.IO) {
+                LocalFileScanner.scanCollections(requireContext(), creatorUri)
+            }
+
+            // Start streaming posts concurrently (don't await collections first)
+            postsLoading = true
+            val postsJob = launch { streamPosts(creatorUri) }
+
+            // Wait for collections and show them
+            collections = collectionsDeferred.await()
+            if (_binding == null) return@launch
+            collectionsLoaded = true
+            rebuildList()
+
+            // Wait for posts to finish
+            postsJob.join()
         }
     }
 
@@ -190,28 +205,41 @@ class CreatorFragment : Fragment() {
 
     private fun rebuildList() {
         val filtered = filteredPosts()
-        // Clamp displayedCount to filtered size
         val shown = if (searchQuery.isBlank()) {
             minOf(displayedCount, filtered.size)
         } else {
-            filtered.size // show all when searching
+            filtered.size
         }
 
         val items = mutableListOf<CreatorListItem>()
         headerItem?.let { items.add(it) }
         items.add(CreatorListItem.SearchBar)
 
-        if (collections.isNotEmpty()) {
-            items.add(CreatorListItem.SectionLabel("Collections (${collections.size})"))
-            items.add(CreatorListItem.CollectionsRow(collections))
+        // Collections section
+        if (collectionsLoaded) {
+            if (collections.isNotEmpty()) {
+                items.add(CreatorListItem.SectionLabel("Collections (${collections.size})"))
+                items.add(CreatorListItem.CollectionsRow(collections))
+            }
+        } else {
+            items.add(CreatorListItem.SectionLabel("Collections"))
+            items.add(CreatorListItem.CollectionsShimmer)
         }
 
-        items.add(CreatorListItem.SectionLabel("Posts (${filtered.size})"))
-        for (i in 0 until shown) {
-            items.add(CreatorListItem.Post(filtered[i]))
-        }
-        if (!doneCollecting || (searchQuery.isBlank() && shown < filtered.size)) {
-            items.add(CreatorListItem.LoadMore)
+        // Posts section
+        if (shown > 0) {
+            items.add(CreatorListItem.SectionLabel("Posts (${filtered.size})"))
+            for (i in 0 until shown) {
+                items.add(CreatorListItem.Post(filtered[i]))
+            }
+            if (!doneCollecting || (searchQuery.isBlank() && shown < filtered.size)) {
+                items.add(CreatorListItem.LoadMore)
+            }
+        } else if (postsLoading && !doneCollecting) {
+            items.add(CreatorListItem.SectionLabel("Posts"))
+            items.add(CreatorListItem.PostsShimmer)
+        } else if (doneCollecting) {
+            items.add(CreatorListItem.SectionLabel("Posts (0)"))
         }
 
         listAdapter?.submitItems(items)

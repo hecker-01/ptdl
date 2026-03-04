@@ -11,8 +11,8 @@ android {
         applicationId = "dev.heckr.ptdl"
         minSdk = 31
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.0.1-alpha"
+        versionCode = 10
+        versionName = "26.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

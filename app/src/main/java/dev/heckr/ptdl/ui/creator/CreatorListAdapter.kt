@@ -17,6 +17,8 @@ import dev.heckr.ptdl.databinding.ItemLoadMoreBinding
 import dev.heckr.ptdl.databinding.ItemPostBinding
 import dev.heckr.ptdl.databinding.ItemSearchBarBinding
 import dev.heckr.ptdl.databinding.ItemSectionLabelBinding
+import dev.heckr.ptdl.databinding.ItemShimmerCollectionsBinding
+import dev.heckr.ptdl.databinding.ItemShimmerPostsBinding
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -42,6 +44,10 @@ sealed class CreatorListItem {
     data class Post(val post: PostInfo) : CreatorListItem()
 
     data object LoadMore : CreatorListItem()
+
+    data object CollectionsShimmer : CreatorListItem()
+
+    data object PostsShimmer : CreatorListItem()
 }
 
 class CreatorListAdapter(
@@ -57,6 +63,8 @@ class CreatorListAdapter(
         private const val TYPE_COLLECTIONS = 3
         private const val TYPE_POST = 4
         private const val TYPE_LOAD_MORE = 5
+        private const val TYPE_SHIMMER_COLLECTIONS = 6
+        private const val TYPE_SHIMMER_POSTS = 7
     }
 
     private var items: List<CreatorListItem> = emptyList()
@@ -75,6 +83,8 @@ class CreatorListAdapter(
         is CreatorListItem.CollectionsRow -> TYPE_COLLECTIONS
         is CreatorListItem.Post -> TYPE_POST
         is CreatorListItem.LoadMore -> TYPE_LOAD_MORE
+        is CreatorListItem.CollectionsShimmer -> TYPE_SHIMMER_COLLECTIONS
+        is CreatorListItem.PostsShimmer -> TYPE_SHIMMER_POSTS
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -86,6 +96,8 @@ class CreatorListAdapter(
             TYPE_COLLECTIONS -> CollectionsVH(ItemCollectionsRowBinding.inflate(inflater, parent, false))
             TYPE_POST -> PostVH(ItemPostBinding.inflate(inflater, parent, false))
             TYPE_LOAD_MORE -> LoadMoreVH(ItemLoadMoreBinding.inflate(inflater, parent, false))
+            TYPE_SHIMMER_COLLECTIONS -> ShimmerVH(ItemShimmerCollectionsBinding.inflate(inflater, parent, false).root)
+            TYPE_SHIMMER_POSTS -> ShimmerVH(ItemShimmerPostsBinding.inflate(inflater, parent, false).root)
             else -> throw IllegalArgumentException("Unknown view type $viewType")
         }
     }
@@ -98,6 +110,8 @@ class CreatorListAdapter(
             is CreatorListItem.CollectionsRow -> (holder as CollectionsVH).bind(item)
             is CreatorListItem.Post -> (holder as PostVH).bind(item.post)
             is CreatorListItem.LoadMore -> { /* spinner auto-shows */ }
+            is CreatorListItem.CollectionsShimmer -> { /* static placeholder */ }
+            is CreatorListItem.PostsShimmer -> { /* static placeholder */ }
         }
     }
 
@@ -168,6 +182,8 @@ class CreatorListAdapter(
     }
 
     inner class LoadMoreVH(b: ItemLoadMoreBinding) : RecyclerView.ViewHolder(b.root)
+
+    inner class ShimmerVH(view: android.view.View) : RecyclerView.ViewHolder(view)
 }
 
 // ── Inner adapter for the horizontal collections row ──────────────────

@@ -81,6 +81,12 @@ class SettingsFragment : Fragment() {
         }
 
         updateFolderDisplay()
+
+        // Build info
+        val info = requireContext().packageManager.getPackageInfo(requireContext().packageName, 0)
+        binding.aboutVersion.text = "Version ${info.versionName}"
+        binding.aboutBuild.text = "Build ${info.longVersionCode} · ${if (dev.heckr.ptdl.BuildConfig.DEBUG) "Debug" else "Release"}"
+        binding.aboutPackage.text = info.packageName
     }
 
     private fun startIndexing(uri: Uri) {

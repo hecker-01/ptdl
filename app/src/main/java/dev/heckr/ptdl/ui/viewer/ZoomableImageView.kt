@@ -1,5 +1,6 @@
 package dev.heckr.ptdl.ui.viewer
 
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Matrix
 import android.graphics.PointF
@@ -7,6 +8,7 @@ import android.util.AttributeSet
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
+import android.view.animation.DecelerateInterpolator
 import androidx.appcompat.widget.AppCompatImageView
 
 /**
@@ -46,21 +48,33 @@ class ZoomableImageView @JvmOverloads constructor(
             }
         })
 
+    private var zoomAnimator: ValueAnimator? = null
+
     private val gestureDetector = GestureDetector(context,
         object : GestureDetector.SimpleOnGestureListener() {
             override fun onDoubleTap(e: MotionEvent): Boolean {
                 val scale = currentScale()
+                val targetMatrix = Matrix()
                 if (scale > minScale * 1.1f) {
-                    // Reset to fit
-                    setupFitCenter()
+                    // Animate back to fit
+                    val d = drawable ?: return true
+                    val dw = d.intrinsicWidth.toFloat()
+                    val dh = d.intrinsicHeight.toFloat()
+                    val vw = width.toFloat()
+                    val vh = height.toFloat()
+                    val fitScale = minOf(vw / dw, vh / dh)
+                    targetMatrix.postScale(fitScale, fitScale)
+                    targetMatrix.postTranslate((vw - dw * fitScale) / 2f, (vh - dh * fitScale) / 2f)
                 } else {
-                    // Zoom to 2.5x at tap point
+                    // Animate zoom to 2.5x at tap point
                     val target = 2.5f
                     val factor = target / scale
-                    imageMatrix2.postScale(factor, factor, e.x, e.y)
-                    clampTranslation()
-                    imageMatrix = imageMatrix2
+                    targetMatrix.set(imageMatrix2)
+                    targetMatrix.postScale(factor, factor, e.x, e.y)
+                    // Clamp the target
+                    clampMatrix(targetMatrix)
                 }
+                animateMatrix(imageMatrix2, targetMatrix)
                 return true
             }
         })
@@ -178,6 +192,47 @@ class ZoomableImageView @JvmOverloads constructor(
     private fun midPoint(point: PointF, event: MotionEvent) {
         point.set((event.getX(0) + event.getX(1)) / 2f,
                   (event.getY(0) + event.getY(1)) / 2f)
+    }
+
+    private fun animateMatrix(from: Matrix, to: Matrix) {
+        zoomAnimator?.cancel()
+        val startValues = FloatArray(9)
+        val endValues = FloatArray(9)
+        from.getValues(startValues)
+        to.getValues(endValues)
+
+        zoomAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+            duration = 250
+            interpolator = DecelerateInterpolator()
+            val animValues = FloatArray(9)
+            addUpdateListener { animator ->
+                val t = animator.animatedValue as Float
+                for (i in 0..8) {
+                    animValues[i] = startValues[i] + (endValues[i] - startValues[i]) * t
+                }
+                imageMatrix2.setValues(animValues)
+                imageMatrix = imageMatrix2
+            }
+            start()
+        }
+    }
+
+    private fun clampMatrix(m: Matrix) {
+        val d = drawable ?: return
+        val dw = d.intrinsicWidth.toFloat()
+        val dh = d.intrinsicHeight.toFloat()
+        val vw = width.toFloat()
+        val vh = height.toFloat()
+        val vals = FloatArray(9)
+        m.getValues(vals)
+        val scale = vals[Matrix.MSCALE_X]
+        val scaledW = dw * scale
+        val scaledH = dh * scale
+        vals[Matrix.MTRANS_X] = if (scaledW <= vw) (vw - scaledW) / 2f
+            else vals[Matrix.MTRANS_X].coerceIn(vw - scaledW, 0f)
+        vals[Matrix.MTRANS_Y] = if (scaledH <= vh) (vh - scaledH) / 2f
+            else vals[Matrix.MTRANS_Y].coerceIn(vh - scaledH, 0f)
+        m.setValues(vals)
     }
 
     companion object {

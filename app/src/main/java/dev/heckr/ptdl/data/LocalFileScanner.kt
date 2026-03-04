@@ -11,9 +11,11 @@ import androidx.documentfile.provider.DocumentFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -22,11 +24,13 @@ object LocalFileScanner {
 
     // ─── Creator scanning ────────────────────────────────────────────────────
 
-    fun scanCreators(context: Context, rootUri: Uri): List<CreatorInfo> {
-        val rootDoc = DocumentFile.fromTreeUri(context, rootUri) ?: return emptyList()
-        return rootDoc.listFiles()
+    suspend fun scanCreators(context: Context, rootUri: Uri): List<CreatorInfo> = coroutineScope {
+        val rootDoc = DocumentFile.fromTreeUri(context, rootUri) ?: return@coroutineScope emptyList()
+        rootDoc.listFiles()
             .filter { it.isDirectory && it.name?.startsWith(".") == false }
-            .mapNotNull { parseCreator(context, it) }
+            .map { folder -> async(Dispatchers.IO) { parseCreator(context, folder) } }
+            .awaitAll()
+            .filterNotNull()
             .sortedBy { it.name.lowercase() }
     }
 
@@ -95,19 +99,35 @@ object LocalFileScanner {
     }
 
     /**
-     * Streaming version — emits each [PostInfo] as soon as it's parsed.
-     * Consumers can take the first N without waiting for the full list.
+     * Streaming version — emits each [PostInfo] as soon as it's parsed,
+     * using parallel workers for faster throughput.
      */
     fun scanPostsFlow(context: Context, creatorFolderUri: Uri): Flow<PostInfo> = flow {
         val creatorDoc = DocumentFile.fromTreeUri(context, creatorFolderUri) ?: return@flow
         val postsDir = creatorDoc.findFile("posts") ?: return@flow
         val folders = postsDir.listFiles()
             .filter { it.isDirectory && it.name?.startsWith(".") == false }
-        // Sort by folder name descending (id prefix gives chronological order)
-        folders.sortedByDescending { it.name }
-            .forEach { folder ->
-                parsePostShallow(context, folder)?.let { emit(it) }
+            .sortedByDescending { it.name }
+
+        val channel = Channel<PostInfo>(Channel.BUFFERED)
+        coroutineScope {
+            // Launch parallel workers in chunks of 8
+            launch(Dispatchers.IO) {
+                coroutineScope {
+                    folders.chunked(8).forEach { chunk ->
+                        chunk.map { folder ->
+                            async {
+                                parsePostShallow(context, folder)?.let { channel.send(it) }
+                            }
+                        }.awaitAll()
+                    }
+                }
+                channel.close()
             }
+            for (post in channel) {
+                emit(post)
+            }
+        }
     }
 
     private fun parsePostShallow(context: Context, postFolder: DocumentFile): PostInfo? {
@@ -309,12 +329,14 @@ object LocalFileScanner {
 
     // ─── Collection scanning ─────────────────────────────────────────────────
 
-    fun scanCollections(context: Context, creatorFolderUri: Uri): List<CollectionInfo> {
-        val creatorDoc = DocumentFile.fromTreeUri(context, creatorFolderUri) ?: return emptyList()
-        val collectionsDir = creatorDoc.findFile("collections") ?: return emptyList()
-        return collectionsDir.listFiles()
+    suspend fun scanCollections(context: Context, creatorFolderUri: Uri): List<CollectionInfo> = coroutineScope {
+        val creatorDoc = DocumentFile.fromTreeUri(context, creatorFolderUri) ?: return@coroutineScope emptyList()
+        val collectionsDir = creatorDoc.findFile("collections") ?: return@coroutineScope emptyList()
+        collectionsDir.listFiles()
             .filter { it.isDirectory && it.name?.startsWith(".") == false }
-            .mapNotNull { parseCollection(context, it) }
+            .map { folder -> async(Dispatchers.IO) { parseCollection(context, folder) } }
+            .awaitAll()
+            .filterNotNull()
             .sortedBy { it.title.lowercase() }
     }
 
