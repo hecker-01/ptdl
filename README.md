@@ -51,7 +51,6 @@ A native Android app for browsing content downloaded with [patreon-dl](https://g
 
 ## Tech Stack
 
-|               |                                          |
 | ------------- | ---------------------------------------- |
 | Language      | Kotlin                                   |
 | UI            | View Binding + Material 3                |

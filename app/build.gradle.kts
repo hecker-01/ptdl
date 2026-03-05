@@ -3,6 +3,10 @@ plugins {
     alias(libs.plugins.kotlin.android)
 }
 
+val gitCommitCount = providers.exec {
+    commandLine("git", "rev-list", "--count", "HEAD")
+}.standardOutput.asText.get().trim().toInt()
+
 android {
     namespace = "dev.heckr.ptdl"
     compileSdk = 36
@@ -11,7 +15,7 @@ android {
         applicationId = "dev.heckr.ptdl"
         minSdk = 31
         targetSdk = 36
-        versionCode = 10
+        versionCode = gitCommitCount
         versionName = "26.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -45,6 +49,17 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+    }
+
+    applicationVariants.all {
+        outputs.all {
+            val output = this as? com.android.build.gradle.internal.api.ApkVariantOutputImpl
+            output?.outputFileName = when {
+                buildType.name == "debug" -> "ptdl-dev-${versionName.replace(Regex("-.*"), "").replace(".", "-")}.apk"
+                buildType.name == "release" -> "ptdl-release-${versionName.replace(".", "-")}.apk"
+                else -> output?.outputFileName ?: ""
+            }
         }
     }
     compileOptions {
