@@ -1,2 +1,2 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.recyclerview.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/collections_recycler" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:clipToPadding="false" android:paddingHorizontal="16dp" android:paddingBottom="8dp" />
+<androidx.recyclerview.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/collections_recycler" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:clipToPadding="false" android:paddingHorizontal="16dp" android:paddingBottom="8dp" android:nestedScrollingEnabled="false" />
