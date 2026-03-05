@@ -46,23 +46,23 @@ A native Android app for browsing content downloaded with [patreon-dl](https://g
 
 1. Download content with [patreon-dl](https://github.com/patrickkfkan/patreon-dl)
 2. Install PTDL on your Android device (API 31+ / Android 12+)
-3. Open Settings → Select your patreon-dl folder
+3. Open Settings > Select your patreon-dl folder
 4. Browse your content
 
 ## Tech Stack
 
 | ------------- | ---------------------------------------- |
-| Language      | Kotlin                                   |
-| UI            | View Binding + Material 3                |
-| Navigation    | Jetpack Navigation Component             |
-| Image Loading | Coil 2.7                                 |
-| Concurrency   | Kotlin Coroutines (Flow, Channel, async) |
-| Storage       | SAF DocumentFile                         |
-| Min SDK       | 31 (Android 12)                          |
+| Language | Kotlin |
+| UI | View Binding + Material 3 |
+| Navigation | Jetpack Navigation Component |
+| Image Loading | Coil 2.7 |
+| Concurrency | Kotlin Coroutines (Flow, Channel, async) |
+| Storage | SAF DocumentFile |
+| Min SDK | 31 (Android 12) |
 
 ## Building
 
 ```bash
-./gradlew assembleDebug
-./gradlew installDebug
+./gradlew assembleRelease
+./gradlew installRelease
 ```

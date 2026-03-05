@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
 }
 
 val gitCommitCount = providers.exec {
@@ -16,7 +15,7 @@ android {
         minSdk = 31
         targetSdk = 36
         versionCode = gitCommitCount
-        versionName = "26.1.0"
+        versionName = "26.1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -51,27 +50,35 @@ android {
             )
         }
     }
-
-    applicationVariants.all {
-        outputs.all {
-            val output = this as? com.android.build.gradle.internal.api.ApkVariantOutputImpl
-            output?.outputFileName = when {
-                buildType.name == "debug" -> "ptdl-dev-${versionName.replace(Regex("-.*"), "").replace(".", "-")}.apk"
-                buildType.name == "release" -> "ptdl-release-${versionName.replace(".", "-")}.apk"
-                else -> output?.outputFileName ?: ""
-            }
-        }
-    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlinOptions {
-        jvmTarget = "11"
-    }
     buildFeatures {
         buildConfig = true
         viewBinding = true
+    }
+}
+
+androidComponents {
+    onVariants { variant ->
+        val versionName = android.defaultConfig.versionName ?: "0.0.0"
+        val apkFileName = when (variant.buildType) {
+            "debug" -> "comicconverter-dev-${versionName.replace(Regex("-.*"), "").replace(".", "-")}.apk"
+            "release" -> "comicconverter-release-${versionName.replace(".", "-")}.apk"
+            else -> "comicconverter-${variant.name}.apk"
+        }
+        variant.outputs.forEach { output ->
+            if (output is com.android.build.api.variant.impl.VariantOutputImpl) {
+                output.outputFileName = apkFileName
+            }
+        }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
     }
 }
 
@@ -84,11 +91,7 @@ dependencies {
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.androidx.fragment.ktx)
-    implementation(libs.navigation.fragment.ktx)
-    implementation(libs.navigation.ui.ktx)
-    implementation(libs.kotlinx.coroutines.android)
     implementation(libs.json)
-    implementation(libs.okhttp)
     implementation(libs.coil)
     implementation(libs.androidx.documentfile)
 
