@@ -23,7 +23,7 @@ object PatreonRepository {
     @Volatile private var cachedCreators: List<CreatorInfo> = emptyList()
     private val postsCache = ConcurrentHashMap<String, List<PostInfo>>()
 
-    // ─── Public API ──────────────────────────────────────────────────────────
+    // --- Public API ----------------------------------------------------------
 
     /** Call once on app start (or folder change) to pre-fill all caches. */
     fun warmUp(context: Context, rootUri: Uri) {
@@ -165,7 +165,7 @@ object PatreonRepository {
         postsCache.clear()
     }
 
-    // ─── Private helpers ─────────────────────────────────────────────────────
+    // --- Private helpers -----------------------------------------------------
 
     private fun preloadThumbnails(context: Context, posts: List<PostInfo>) {
         posts.forEach { post ->

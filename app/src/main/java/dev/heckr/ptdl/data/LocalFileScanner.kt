@@ -22,7 +22,7 @@ import java.io.InputStreamReader
 
 object LocalFileScanner {
 
-    // ─── Creator scanning ────────────────────────────────────────────────────
+    // --- Creator scanning ----------------------------------------------------
 
     suspend fun scanCreators(context: Context, rootUri: Uri): List<CreatorInfo> = coroutineScope {
         val rootDoc = DocumentFile.fromTreeUri(context, rootUri) ?: return@coroutineScope emptyList()
@@ -83,7 +83,7 @@ object LocalFileScanner {
         )
     }
 
-    // ─── Post scanning ───────────────────────────────────────────────────────
+    // --- Post scanning -------------------------------------------------------
 
     suspend fun scanPosts(context: Context, creatorFolderUri: Uri): List<PostInfo> = coroutineScope {
         val creatorDoc = DocumentFile.fromTreeUri(context, creatorFolderUri) ?: return@coroutineScope emptyList()
@@ -179,7 +179,7 @@ object LocalFileScanner {
         )
     }
 
-    // ─── Post detail ─────────────────────────────────────────────────────────
+    // --- Post detail ---------------------------------------------------------
 
     data class PostDetail(
         val title: String,
@@ -253,7 +253,7 @@ object LocalFileScanner {
         return postDoc.findFile("attachments")?.imageFiles() ?: emptyList()
     }
 
-    // ─── Helpers ─────────────────────────────────────────────────────────────
+    // --- Helpers -------------------------------------------------------------
 
     private fun readFile(context: Context, file: DocumentFile): String {
         val stream = context.contentResolver.openInputStream(file.uri) ?: return ""
@@ -327,7 +327,7 @@ object LocalFileScanner {
         return androidx.core.text.HtmlCompat.fromHtml(html, androidx.core.text.HtmlCompat.FROM_HTML_MODE_COMPACT)
     }
 
-    // ─── Collection scanning ─────────────────────────────────────────────────
+    // --- Collection scanning -------------------------------------------------
 
     suspend fun scanCollections(context: Context, creatorFolderUri: Uri): List<CollectionInfo> = coroutineScope {
         val creatorDoc = DocumentFile.fromTreeUri(context, creatorFolderUri) ?: return@coroutineScope emptyList()

@@ -115,7 +115,7 @@ class CreatorListAdapter(
         }
     }
 
-    // ── ViewHolders ────────────────────────────────────────────────────
+    // -- ViewHolders ----------------------------------------------------
 
     inner class HeaderVH(private val b: ItemCreatorHeaderBinding) :
         RecyclerView.ViewHolder(b.root) {
@@ -186,7 +186,7 @@ class CreatorListAdapter(
     inner class ShimmerVH(view: android.view.View) : RecyclerView.ViewHolder(view)
 }
 
-// ── Inner adapter for the horizontal collections row ──────────────────
+// -- Inner adapter for the horizontal collections row ------------------
 
 private class CollectionsInnerAdapter(
     private val onClick: (CollectionInfo) -> Unit

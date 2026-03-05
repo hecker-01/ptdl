@@ -116,7 +116,7 @@ class CreatorFragment : Fragment() {
         postsLoading = false
 
         viewLifecycleOwner.lifecycleScope.launch {
-            // ── Step 1: Load profile info (fast) ──
+            // -- Step 1: Load profile info (fast) --
             val creator = withContext(Dispatchers.IO) {
                 LocalFileScanner.parseCreatorFromUri(requireContext(), creatorUri)
             }
@@ -146,7 +146,7 @@ class CreatorFragment : Fragment() {
             // Show header + skeleton placeholders for collections & posts
             rebuildList()
 
-            // ── Step 2: Load collections + start post streaming in parallel ──
+            // -- Step 2: Load collections + start post streaming in parallel --
             val collectionsDeferred = async(Dispatchers.IO) {
                 LocalFileScanner.scanCollections(requireContext(), creatorUri)
             }

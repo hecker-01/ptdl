@@ -19,6 +19,9 @@
     <string name="about">About</string>
     <string name="app_description">A local viewer for content downloaded with patreon‑dl.</string>
     <string name="indexing_folder">Indexing folder…</string>
+    <string name="updates">Updates</string>
+    <string name="check_for_updates">Check for updates</string>
+    <string name="tap_to_check">Tap to check for new versions</string>
     <string name="members_only">🔒 Members only</string>
     <string name="search_posts">Search posts…</string>
 </resources>

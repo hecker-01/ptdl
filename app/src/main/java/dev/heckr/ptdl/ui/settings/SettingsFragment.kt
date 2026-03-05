@@ -14,6 +14,7 @@ import dev.heckr.ptdl.R
 import dev.heckr.ptdl.ThemeManager
 import dev.heckr.ptdl.data.PatreonRepository
 import dev.heckr.ptdl.databinding.FragmentSettingsBinding
+import dev.heckr.ptdl.settings.AppUpdater
 import dev.heckr.ptdl.settings.SettingsManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -25,6 +26,7 @@ class SettingsFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var settingsManager: SettingsManager
+    private lateinit var appUpdater: AppUpdater
 
     private val pickFolder = registerForActivityResult(
         ActivityResultContracts.OpenDocumentTree()
@@ -46,9 +48,23 @@ class SettingsFragment : Fragment() {
         return binding.root
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        appUpdater = AppUpdater(this)
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         settingsManager = SettingsManager(requireContext())
+
+        // Updates
+        appUpdater.onStateChanged = { _, message ->
+            binding.updateSubtitle.text = message
+        }
+        appUpdater.syncFromChecker()
+        binding.updateCard.setOnClickListener {
+            appUpdater.onUpdateTapped(requireContext())
+        }
 
         binding.btnSelectFolder.setOnClickListener {
             pickFolder.launch(null)
@@ -159,6 +175,7 @@ class SettingsFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        appUpdater.cleanup()
         super.onDestroyView()
         _binding = null
     }
