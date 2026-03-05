@@ -10,6 +10,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import dev.heckr.ptdl.R
@@ -27,6 +28,7 @@ class HomeFragment : Fragment() {
 
     private lateinit var settingsManager: SettingsManager
     private var adapter: CreatorsAdapter? = null
+    private var favoritesAdapter: FavoritesAdapter? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -38,6 +40,12 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         settingsManager = SettingsManager(requireContext())
+
+        favoritesAdapter = FavoritesAdapter(
+            onClick = {
+                findNavController().navigate(R.id.action_home_to_favorites)
+            }
+        )
 
         adapter = CreatorsAdapter(
             onClick = { creator ->
@@ -53,7 +61,7 @@ class HomeFragment : Fragment() {
         )
 
         binding.creatorsRecycler.layoutManager = LinearLayoutManager(requireContext())
-        binding.creatorsRecycler.adapter = adapter
+        binding.creatorsRecycler.adapter = ConcatAdapter(favoritesAdapter!!, adapter!!)
 
         binding.btnSelectFolder.setOnClickListener {
             requireActivity().findViewById<BottomNavigationView>(R.id.bottom_navigation)
@@ -122,5 +130,7 @@ class HomeFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        adapter = null
+        favoritesAdapter = null
     }
 }

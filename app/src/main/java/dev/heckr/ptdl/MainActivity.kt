@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
         // Hide the bottom bar while inside creator/post detail screens
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
-                R.id.creatorFragment, R.id.postDetailFragment, R.id.collectionFragment ->
+                R.id.creatorFragment, R.id.postDetailFragment, R.id.collectionFragment, R.id.favoritesFragment ->
                     bottomNav.visibility = View.GONE
                 else ->
                     bottomNav.visibility = View.VISIBLE
