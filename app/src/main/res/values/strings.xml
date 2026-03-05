@@ -2,4 +2,23 @@
     <string name="app_name">PTDL</string>
     <string name="select_folder">Select patreon-dl folder</string>
     <string name="no_folder_selected">No folder selected</string>
+    <string name="close">Close</string>
+    <string name="no_posts_in_collection">No posts in this collection</string>
+    <string name="no_patreon_dl_folder_selected">No patreon‑dl folder selected</string>
+    <string name="open_settings_to_choose_your_patreon_dl_output_directory">Open Settings to choose your patreon‑dl output directory.</string>
+    <string name="open_settings">Open Settings</string>
+    <string name="source">Source</string>
+    <string name="patreon_dl_folder">patreon‑dl folder</string>
+    <string name="not_set">Not set</string>
+    <string name="clear">Clear</string>
+    <string name="appearance">Appearance</string>
+    <string name="theme">Theme</string>
+    <string name="theme.system">System</string>
+    <string name="theme.light">Light</string>
+    <string name="theme.dark">Dark</string>
+    <string name="about">About</string>
+    <string name="app_description">A local viewer for content downloaded with patreon‑dl.</string>
+    <string name="indexing_folder">Indexing folder…</string>
+    <string name="members_only">🔒 Members only</string>
+    <string name="search_posts">Search posts…</string>
 </resources>

@@ -18,7 +18,7 @@
 
     <ProgressBar android:id="@+id/progress_bar" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:visibility="gone" app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-    <TextView android:id="@+id/empty_label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:text="No posts in this collection" android:textAppearance="?attr/textAppearanceBodyLarge" android:textColor="?attr/colorOnSurfaceVariant" android:visibility="gone" app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+    <TextView android:id="@+id/empty_label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:text="@string/no_posts_in_collection" android:textAppearance="?attr/textAppearanceBodyLarge" android:textColor="?attr/colorOnSurfaceVariant" android:visibility="gone" app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
     <androidx.recyclerview.widget.RecyclerView android:id="@+id/posts_recycler" android:layout_width="match_parent" android:layout_height="match_parent" android:clipToPadding="false" android:scrollbars="vertical" android:paddingHorizontal="12dp" android:paddingTop="12dp" android:paddingBottom="16dp" app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 

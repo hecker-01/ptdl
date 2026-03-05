@@ -6,7 +6,11 @@
         <action android:id="@+id/action_home_to_creator" app:destination="@id/creatorFragment" />
     </fragment>
 
-    <fragment android:id="@+id/navigation_profile" android:name="dev.heckr.ptdl.ui.settings.SettingsFragment" android:label="Settings" />
+    <fragment android:id="@+id/navigation_favorites" android:name="dev.heckr.ptdl.ui.SoonFragment" android:label="Favorites" />
+
+    <fragment android:id="@+id/navigation_download" android:name="dev.heckr.ptdl.ui.SoonFragment" android:label="Download" />
+
+    <fragment android:id="@+id/navigation_settings" android:name="dev.heckr.ptdl.ui.settings.SettingsFragment" android:label="Settings" />
 
     <fragment android:id="@+id/creatorFragment" android:name="dev.heckr.ptdl.ui.creator.CreatorFragment" android:label="Creator">
         <argument android:name="creatorFolderUri" app:argType="string" />

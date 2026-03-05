@@ -6,10 +6,7 @@ import com.google.android.material.color.DynamicColors
 import dev.heckr.ptdl.settings.SettingsManager
 
 object ThemeManager {
-    const val KEY_THEME_COLOR = "pref_theme_color"
     const val KEY_DARK_MODE = "pref_dark_mode"
-    const val THEME_DYNAMIC = "dynamic"
-
     const val MODE_SYSTEM = "system"
     const val MODE_LIGHT = "light"
     const val MODE_DARK = "dark"

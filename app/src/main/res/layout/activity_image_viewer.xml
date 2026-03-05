@@ -30,7 +30,7 @@
         android:src="@android:drawable/ic_menu_close_clear_cancel"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:padding="12dp"
-        android:contentDescription="Close"
+        android:contentDescription="@string/close"
         app:tint="@android:color/white"
         xmlns:app="http://schemas.android.com/apk/res-auto" />
 

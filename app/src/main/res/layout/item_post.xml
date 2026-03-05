@@ -17,7 +17,7 @@
 
                 <TextView android:id="@+id/post_date" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textAppearance="?attr/textAppearanceLabelSmall" android:textColor="?attr/colorOnSurfaceVariant" />
 
-                <TextView android:id="@+id/lock_label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🔒 Members only" android:textAppearance="?attr/textAppearanceLabelSmall" android:textColor="?attr/colorError" android:visibility="gone" />
+                <TextView android:id="@+id/lock_label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/members_only" android:textAppearance="?attr/textAppearanceLabelSmall" android:textColor="?attr/colorError" android:visibility="gone" />
 
             </LinearLayout>
 

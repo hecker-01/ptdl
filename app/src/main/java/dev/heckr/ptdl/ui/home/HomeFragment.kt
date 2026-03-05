@@ -57,7 +57,7 @@ class HomeFragment : Fragment() {
 
         binding.btnSelectFolder.setOnClickListener {
             requireActivity().findViewById<BottomNavigationView>(R.id.bottom_navigation)
-                .selectedItemId = R.id.navigation_profile
+                .selectedItemId = R.id.navigation_settings
         }
     }
 

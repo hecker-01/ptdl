@@ -16,11 +16,11 @@
 
         <ImageView android:layout_width="72dp" android:layout_height="72dp" android:src="@drawable/icon_download" android:contentDescription="@null" app:tint="?attr/colorOnSurfaceVariant" />
 
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:text="No patreon‑dl folder selected" android:textAppearance="?attr/textAppearanceTitleMedium" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:text="@string/no_patreon_dl_folder_selected" android:textAppearance="?attr/textAppearanceTitleMedium" />
 
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:gravity="center" android:text="Open Settings to choose your patreon‑dl output directory." android:textAppearance="?attr/textAppearanceBodyMedium" android:textColor="?attr/colorOnSurfaceVariant" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:gravity="center" android:text="@string/open_settings_to_choose_your_patreon_dl_output_directory" android:textAppearance="?attr/textAppearanceBodyMedium" android:textColor="?attr/colorOnSurfaceVariant" />
 
-        <com.google.android.material.button.MaterialButton android:id="@+id/btn_select_folder" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:text="Open Settings" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/btn_select_folder" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:text="@string/open_settings" />
 
     </LinearLayout>
 
