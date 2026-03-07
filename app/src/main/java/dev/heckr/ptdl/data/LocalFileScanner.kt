@@ -24,6 +24,20 @@ object LocalFileScanner {
 
     // --- Creator scanning ----------------------------------------------------
 
+    /**
+     * Fast multi-threaded check: scans subdirectories for any `campaign_info/` folder.
+     * Returns true as soon as one is found, false if none exist.
+     */
+    suspend fun isValidPatreonDlFolder(context: Context, rootUri: Uri): Boolean = coroutineScope {
+        val rootDoc = DocumentFile.fromTreeUri(context, rootUri) ?: return@coroutineScope false
+        val subdirs = rootDoc.listFiles()
+            .filter { it.isDirectory && it.name?.startsWith(".") == false }
+        if (subdirs.isEmpty()) return@coroutineScope false
+        subdirs.map { folder ->
+            async(Dispatchers.IO) { folder.findFile("campaign_info") != null }
+        }.awaitAll().any { it }
+    }
+
     suspend fun scanCreators(context: Context, rootUri: Uri): List<CreatorInfo> = coroutineScope {
         val rootDoc = DocumentFile.fromTreeUri(context, rootUri) ?: return@coroutineScope emptyList()
         rootDoc.listFiles()

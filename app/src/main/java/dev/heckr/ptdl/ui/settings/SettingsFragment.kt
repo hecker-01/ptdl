@@ -113,7 +113,28 @@ class SettingsFragment : Fragment() {
         binding.btnClearFolder.isEnabled = false
 
         viewLifecycleOwner.lifecycleScope.launch {
-            val postCount = withContext(Dispatchers.IO) {
+            // Fast multi-threaded validation first
+            val isValid = withContext(Dispatchers.IO) {
+                dev.heckr.ptdl.data.LocalFileScanner.isValidPatreonDlFolder(requireContext(), uri)
+            }
+            if (!isValid) {
+                if (_binding == null) return@launch
+                mainActivity.hideIndexingOverlay()
+                binding.btnSelectFolder.isEnabled = true
+                binding.btnClearFolder.isEnabled = true
+                settingsManager.remove(SettingsManager.KEY_ROOT_URI)
+                PatreonRepository.invalidate()
+                updateFolderDisplay()
+                MaterialAlertDialogBuilder(requireContext())
+                    .setTitle("Invalid folder")
+                    .setMessage("This isn't a patreon-dl folder. Please select the root folder created by patreon-dl that contains creator subfolders.")
+                    .setPositiveButton("OK", null)
+                    .show()
+                return@launch
+            }
+
+            // Valid folder — proceed with full indexing
+            withContext(Dispatchers.IO) {
                 PatreonRepository.warmUpAwait(
                     requireContext(), uri,
                     onCreatorProgress = { done, total ->
@@ -134,21 +155,7 @@ class SettingsFragment : Fragment() {
                 mainActivity.hideIndexingOverlay()
                 binding.btnSelectFolder.isEnabled = true
                 binding.btnClearFolder.isEnabled = true
-
-                val creators = PatreonRepository.getCachedCreators()
-                if (creators.isEmpty()) {
-                    // Not a valid patreon-dl folder
-                    settingsManager.remove(SettingsManager.KEY_ROOT_URI)
-                    PatreonRepository.invalidate()
-                    updateFolderDisplay()
-                    MaterialAlertDialogBuilder(requireContext())
-                        .setTitle("Invalid folder")
-                        .setMessage("This isn't a patreon-dl folder. Please select the root folder created by patreon-dl that contains creator subfolders.")
-                        .setPositiveButton("OK", null)
-                        .show()
-                } else {
-                    updateFolderDisplay()
-                }
+                updateFolderDisplay()
             }
         }
     }
