@@ -2,18 +2,29 @@ package dev.heckr.ptdl
 
 import android.os.Bundle
 import android.view.View
+import android.widget.FrameLayout
+import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.progressindicator.LinearProgressIndicator
 import dev.heckr.ptdl.settings.SettingsManager
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var settingsManager: SettingsManager
+
+    // Indexing overlay views
+    private lateinit var indexingOverlay: FrameLayout
+    private lateinit var indexingStatus: TextView
+    private lateinit var indexingProgress: LinearProgressIndicator
+    private lateinit var indexingPostStatus: TextView
+    private lateinit var indexingPostProgress: LinearProgressIndicator
 
     override fun onCreate(savedInstanceState: Bundle?) {
         settingsManager = SettingsManager(this)
@@ -29,6 +40,13 @@ class MainActivity : AppCompatActivity() {
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         bottomNav.setupWithNavController(navController)
+
+        // Indexing overlay views
+        indexingOverlay = findViewById(R.id.indexing_overlay)
+        indexingStatus = findViewById(R.id.indexing_status)
+        indexingProgress = findViewById(R.id.indexing_progress)
+        indexingPostStatus = findViewById(R.id.indexing_post_status)
+        indexingPostProgress = findViewById(R.id.indexing_post_progress)
 
         // Check for updates on boot
         dev.heckr.ptdl.settings.UpdateChecker.check(this)
@@ -63,6 +81,38 @@ class MainActivity : AppCompatActivity() {
             bottomNav.setPadding(0, 0, 0, systemBars.bottom)
             insets
         }
+    }
+
+    fun showIndexingOverlay() {
+        indexingOverlay.isVisible = true
+        indexingProgress.isIndeterminate = true
+        indexingStatus.text = "Scanning folder\u2026"
+        indexingPostStatus.isVisible = false
+        indexingPostProgress.isVisible = false
+    }
+
+    fun hideIndexingOverlay() {
+        indexingOverlay.isVisible = false
+    }
+
+    fun updateIndexingCreatorProgress(done: Int, total: Int) {
+        if (done == 0 && total > 0) {
+            indexingProgress.isIndeterminate = false
+            indexingProgress.max = total
+            indexingProgress.progress = 0
+            indexingStatus.text = "Found $total creators"
+            indexingPostStatus.isVisible = true
+            indexingPostProgress.isVisible = true
+            indexingPostProgress.isIndeterminate = true
+            indexingPostStatus.text = "Scanning posts\u2026"
+        } else if (total > 0) {
+            indexingProgress.progress = done
+            indexingStatus.text = "Creators $done / $total"
+        }
+    }
+
+    fun updateIndexingPostProgress(postsSoFar: Int) {
+        indexingPostStatus.text = "$postsSoFar posts found"
     }
 }
 
