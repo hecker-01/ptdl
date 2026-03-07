@@ -26,7 +26,37 @@ class SettingsManager(context: Context) {
     fun unregisterChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) =
         prefs.unregisterOnSharedPreferenceChangeListener(listener)
 
+    fun getFavorites(): Set<String> =
+        prefs.getStringSet(KEY_FAVORITES, emptySet())?.toSet() ?: emptySet()
+
+    fun isFavorite(id: String): Boolean = getFavorites().contains(id)
+
+    fun addFavorite(id: String) {
+        val set = getFavorites().toMutableSet()
+        if (set.add(id)) prefs.edit().putStringSet(KEY_FAVORITES, set).apply()
+    }
+
+    fun removeFavorite(id: String) {
+        val set = getFavorites().toMutableSet()
+        if (set.remove(id)) prefs.edit().putStringSet(KEY_FAVORITES, set).apply()
+    }
+
+    /** Toggle favorite state. Returns true if now favorited. */
+    fun toggleFavorite(id: String): Boolean {
+        val set = getFavorites().toMutableSet()
+        val nowFavorite = if (set.contains(id)) {
+            set.remove(id)
+            false
+        } else {
+            set.add(id)
+            true
+        }
+        prefs.edit().putStringSet(KEY_FAVORITES, set).apply()
+        return nowFavorite
+    }
+
     companion object {
         const val KEY_ROOT_URI = "pref_patreon_dl_root_uri"
+        const val KEY_FAVORITES = "pref_favorites_set"
     }
 }

@@ -42,8 +42,14 @@ class HomeFragment : Fragment() {
         settingsManager = SettingsManager(requireContext())
 
         favoritesAdapter = FavoritesAdapter(
-            onClick = {
+            onHeaderClick = {
                 findNavController().navigate(R.id.action_home_to_favorites)
+            },
+            onPostClick = { post ->
+                findNavController().navigate(
+                    R.id.action_creator_to_post,
+                    bundleOf("postFolderUri" to post.folderUri.toString())
+                )
             }
         )
 
@@ -72,6 +78,12 @@ class HomeFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         loadCreators()
+        // Populate favorites row from repository
+        viewLifecycleOwner.lifecycleScope.launch {
+            PatreonRepository.favoritesFlow(requireContext()).collect { posts ->
+                favoritesAdapter?.submitList(posts)
+            }
+        }
     }
 
     private fun loadCreators() {

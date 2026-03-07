@@ -2,16 +2,33 @@ package dev.heckr.ptdl.ui.home
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
+import dev.heckr.ptdl.data.PostInfo
+import dev.heckr.ptdl.R
 import dev.heckr.ptdl.databinding.ItemFavoritesBinding
 
 class FavoritesAdapter(
-    private val onClick: () -> Unit
+    private val onHeaderClick: () -> Unit,
+    private val onPostClick: (PostInfo) -> Unit
 ) : RecyclerView.Adapter<FavoritesAdapter.ViewHolder>() {
 
-    inner class ViewHolder(binding: ItemFavoritesBinding) : RecyclerView.ViewHolder(binding.root) {
+    private var items: List<PostInfo> = emptyList()
+
+    inner class ViewHolder(private val binding: ItemFavoritesBinding) : RecyclerView.ViewHolder(binding.root) {
         init {
-            binding.root.setOnClickListener { onClick() }
+            binding.root.setOnClickListener { onHeaderClick() }
+        }
+
+        fun bind(list: List<PostInfo>) {
+            binding.root.isVisible = true
+            if (list.isEmpty()) {
+                binding.headerIcon.setImageResource(R.drawable.icon_favorite_empty)
+                binding.headerSubtitle.text = "Click the heart on posts to add them to your favorites."
+            } else {
+                binding.headerIcon.setImageResource(R.drawable.icon_favorite_filled)
+                binding.headerSubtitle.text = "Your favorite or saved posts"
+            }
         }
     }
 
@@ -20,7 +37,12 @@ class FavoritesAdapter(
         return ViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) = Unit
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(items)
 
     override fun getItemCount() = 1
+
+    fun submitList(list: List<PostInfo>) {
+        items = list
+        notifyItemChanged(0)
+    }
 }

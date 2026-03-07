@@ -5,17 +5,16 @@
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:paddingStart="14dp" android:paddingEnd="14dp" android:paddingTop="14dp" android:paddingBottom="14dp">
 
         <!-- Icon circle (mirrors avatar style) -->
-        <com.google.android.material.imageview.ShapeableImageView android:layout_width="46dp" android:layout_height="46dp" android:padding="11dp" android:src="@drawable/icon_favorite" app:tint="?attr/colorPrimary" android:background="?attr/colorSurfaceContainerHighest" app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Full" android:contentDescription="@null" />
+        <com.google.android.material.imageview.ShapeableImageView android:id="@+id/header_icon" android:layout_width="46dp" android:layout_height="46dp" android:padding="11dp" android:src="@drawable/icon_favorite_filled" app:tint="?attr/colorPrimary" android:background="?attr/colorSurfaceContainerHighest" app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Full" android:contentDescription="@null" />
 
         <!-- Name + subtitle -->
         <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:layout_marginStart="10dp">
 
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Favorites" android:textAppearance="?attr/textAppearanceTitleMedium" android:ellipsize="end" android:maxLines="1" />
+            <TextView android:id="@+id/header_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Favorites" android:textAppearance="?attr/textAppearanceTitleMedium" android:ellipsize="end" android:maxLines="1" />
 
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Your favorite or saved posts" android:textAppearance="?attr/textAppearanceBodySmall" android:textColor="?attr/colorOnSurfaceVariant" android:ellipsize="end" android:maxLines="1" />
+            <TextView android:id="@+id/header_subtitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Your favorite or saved posts" android:textAppearance="?attr/textAppearanceBodySmall" android:textColor="?attr/colorOnSurfaceVariant" android:ellipsize="end" android:maxLines="1" />
 
         </LinearLayout>
-
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>

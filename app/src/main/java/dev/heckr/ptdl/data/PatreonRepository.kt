@@ -11,6 +11,10 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.channels.awaitClose
+import android.content.SharedPreferences
+import dev.heckr.ptdl.settings.SettingsManager
 import kotlinx.coroutines.launch
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
@@ -156,6 +160,50 @@ object PatreonRepository {
     /** Stores a fully-scanned post list in the cache. */
     fun cachePosts(key: String, posts: List<PostInfo>) {
         postsCache[key] = posts
+    }
+
+    // --- Favorites integration (backed by SettingsManager prefs) -----------------
+
+    fun isFavorite(context: Context, postId: String): Boolean {
+        return SettingsManager(context).isFavorite(postId)
+    }
+
+    /** Toggle favorite; returns true if the post is now favorited. */
+    fun toggleFavorite(context: Context, postId: String): Boolean {
+        return SettingsManager(context).toggleFavorite(postId)
+    }
+
+    /** Returns favorited PostInfo objects that are currently known in cache. */
+    fun getFavoritePostInfos(context: Context): List<PostInfo> {
+        val ids = SettingsManager(context).getFavorites()
+        if (ids.isEmpty()) return emptyList()
+        val found = mutableListOf<PostInfo>()
+        postsCache.values.forEach { list ->
+            list.forEach { post ->
+                if (ids.contains(post.id)) found.add(post)
+            }
+        }
+        return found.sortedByDescending { it.publishedAt }
+    }
+
+    /** Flow that emits the favorites snapshot and updates when the prefs change. */
+    fun favoritesFlow(context: Context): Flow<List<PostInfo>> {
+        return kotlinx.coroutines.flow.callbackFlow {
+            val sendSnapshot = {
+                trySend(getFavoritePostInfos(context))
+            }
+
+            // Emit initial snapshot
+            sendSnapshot()
+
+            val settings = SettingsManager(context)
+            val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+                if (key == SettingsManager.KEY_FAVORITES) sendSnapshot()
+            }
+            settings.registerChangeListener(listener)
+
+            awaitClose { settings.unregisterChangeListener(listener) }
+        }
     }
 
     /** Call when the user changes the root folder. */

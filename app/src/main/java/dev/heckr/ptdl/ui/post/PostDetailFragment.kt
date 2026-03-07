@@ -15,6 +15,8 @@ import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import coil.transform.RoundedCornersTransformation
 import dev.heckr.ptdl.R
+import androidx.documentfile.provider.DocumentFile
+import dev.heckr.ptdl.data.PatreonRepository
 import dev.heckr.ptdl.data.LocalFileScanner
 import dev.heckr.ptdl.databinding.FragmentPostDetailBinding
 import dev.heckr.ptdl.databinding.ItemAttachmentThumbBinding
@@ -63,6 +65,26 @@ class PostDetailFragment : Fragment() {
             binding.toolbar.title = ""
 
             binding.postDate.text = formatDate(detail.publishedAt)
+
+            // Setup favorite action in toolbar
+            binding.toolbar.menu.clear()
+            binding.toolbar.inflateMenu(R.menu.menu_post_detail)
+            val folderDoc = DocumentFile.fromTreeUri(requireContext(), postUri)
+            val folderName = folderDoc?.name ?: postUri.lastPathSegment ?: ""
+            val postId = folderName.split(" - ", limit = 2)[0].trim()
+            val favItem = binding.toolbar.menu.findItem(R.id.action_favorite)
+            favItem?.setIcon(
+                if (PatreonRepository.isFavorite(requireContext(), postId))
+                    R.drawable.icon_favorite_filled
+                else R.drawable.icon_favorite_empty
+            )
+            binding.toolbar.setOnMenuItemClickListener { item ->
+                if (item.itemId == R.id.action_favorite) {
+                    val now = PatreonRepository.toggleFavorite(requireContext(), postId)
+                    item.setIcon(if (now) R.drawable.icon_favorite_filled else R.drawable.icon_favorite_empty)
+                    true
+                } else false
+            }
 
             val richContent = when {
                 detail.contentJsonString.isNotBlank() && detail.contentJsonString != "null" ->

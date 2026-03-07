@@ -12,6 +12,8 @@ import dev.heckr.ptdl.databinding.ItemPostBinding
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import dev.heckr.ptdl.data.PatreonRepository
+import dev.heckr.ptdl.R
 
 class PostsAdapter(
     private val onClick: (PostInfo) -> Unit
@@ -37,6 +39,18 @@ class PostsAdapter(
                 }
             } else {
                 binding.postThumbnail.isVisible = false
+            }
+
+            // Favorite toggle
+            val isFav = PatreonRepository.isFavorite(binding.root.context, post.id)
+            binding.favoriteButton.setImageResource(
+                if (isFav) R.drawable.icon_favorite_filled else R.drawable.icon_favorite_empty
+            )
+            binding.favoriteButton.setOnClickListener {
+                val nowFav = PatreonRepository.toggleFavorite(binding.root.context, post.id)
+                binding.favoriteButton.setImageResource(
+                    if (nowFav) R.drawable.icon_favorite_filled else R.drawable.icon_favorite_empty
+                )
             }
 
             binding.root.setOnClickListener { onClick(post) }
