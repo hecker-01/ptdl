@@ -2,6 +2,20 @@
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent" android:layout_height="wrap_content" app:cardCornerRadius="12dp" app:cardElevation="1dp">
 
-    <ImageView android:id="@+id/attachment_thumb" android:layout_width="match_parent" android:layout_height="100dp" android:scaleType="centerCrop" android:background="?attr/colorSurfaceVariant" android:contentDescription="@null" />
+    <FrameLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+
+        <ImageView android:id="@+id/attachment_thumb" android:layout_width="match_parent" android:layout_height="100dp" android:scaleType="centerCrop" android:background="?attr/colorSurfaceVariant" android:contentDescription="@null" />
+
+        <ImageView
+            android:id="@+id/attachment_play_icon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            android:contentDescription="@null"
+            android:src="@android:drawable/ic_media_play"
+            app:tint="?attr/colorOnSurface" />
+
+    </FrameLayout>
 
 </com.google.android.material.card.MaterialCardView>

@@ -13,9 +13,14 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import coil.load
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.ui.PlayerView
 import dev.heckr.ptdl.R
 
 class ImageViewerActivity : AppCompatActivity() {
+
+    private lateinit var pagerAdapter: ImagePagerAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,7 +41,8 @@ class ImageViewerActivity : AppCompatActivity() {
 
         // Only keep current page in memory - load/unload on demand
         viewPager.offscreenPageLimit = 1
-        viewPager.adapter = ImagePagerAdapter(uris)
+        pagerAdapter = ImagePagerAdapter(uris)
+        viewPager.adapter = pagerAdapter
         viewPager.setCurrentItem(startIndex, false)
 
         if (uris.size > 1) {
@@ -53,10 +59,19 @@ class ImageViewerActivity : AppCompatActivity() {
 
         closeBtn.setOnClickListener { finish() }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (::pagerAdapter.isInitialized) {
+            pagerAdapter.releasePlayers()
+        }
+    }
 }
 
 private class ImagePagerAdapter(private val uris: List<Uri>) :
     RecyclerView.Adapter<ImagePagerAdapter.VH>() {
+
+    private val activePlayers = mutableSetOf<ExoPlayer>()
 
     override fun getItemCount() = uris.size
 
@@ -74,13 +89,75 @@ private class ImagePagerAdapter(private val uris: List<Uri>) :
 
     inner class VH(view: View) : RecyclerView.ViewHolder(view) {
         private val imageView: ZoomableImageView = view.findViewById(R.id.zoomable_image)
+        private val playerView: PlayerView = view.findViewById(R.id.player_view)
+        private var player: ExoPlayer? = null
 
         fun bind(uri: Uri) {
-            imageView.load(uri) { crossfade(true) }
+            val path = uri.toString().lowercase()
+            val isVideo = listOf("mp4", "webm", "mkv", "mov", "3gp").any { ext ->
+                path.endsWith(".$ext") || path.contains(".$ext?")
+            }
+
+            if (isVideo) {
+                imageView.isVisible = false
+                playerView.isVisible = true
+
+                // Release existing player if any
+                player?.let {
+                    playerView.player = null
+                    it.release()
+                    activePlayers.remove(it)
+                    player = null
+                }
+
+                val context = itemView.context
+                val exo = ExoPlayer.Builder(context).build()
+                player = exo
+                activePlayers.add(exo)
+                playerView.player = exo
+                val mediaItem = MediaItem.fromUri(uri)
+                exo.setMediaItem(mediaItem)
+                exo.prepare()
+                exo.playWhenReady = false
+                playerView.useController = true
+            } else {
+                // Show image
+                playerView.isVisible = false
+                imageView.isVisible = true
+
+                // Ensure any video player is released
+                player?.let {
+                    playerView.player = null
+                    it.release()
+                    activePlayers.remove(it)
+                    player = null
+                }
+
+                imageView.load(uri) { crossfade(true) }
+            }
+
         }
 
         fun recycle() {
             imageView.setImageDrawable(null)
+            player?.let {
+                playerView.player = null
+                it.release()
+                activePlayers.remove(it)
+                player = null
+            }
+            playerView.isVisible = false
         }
+    }
+
+    fun releasePlayers() {
+        for (p in activePlayers) {
+            try {
+                p.release()
+            } catch (e: Exception) {
+                // ignore
+            }
+        }
+        activePlayers.clear()
     }
 }

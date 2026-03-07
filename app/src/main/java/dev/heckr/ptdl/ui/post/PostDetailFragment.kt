@@ -79,17 +79,17 @@ class PostDetailFragment : Fragment() {
             binding.likeCount.text = "♡  ${detail.likeCount}"
             binding.commentCount.text = "💬  ${detail.commentCount}"
 
-            // Thumbnail grid for attachments
-            val imageUris = detail.imageUris
-            if (imageUris.isNotEmpty()) {
-                binding.attachmentsLabel.text = "${imageUris.size} attachment${if (imageUris.size != 1) "s" else ""}"
+            // Thumbnail grid for attachments (images and videos)
+            val attachments = detail.attachmentUris
+            if (attachments.isNotEmpty()) {
+                binding.attachmentsLabel.text = "${attachments.size} attachment${if (attachments.size != 1) "s" else ""}"
                 binding.attachmentsLabel.isVisible = true
                 binding.attachmentsGrid.isVisible = true
 
-                val spanCount = if (imageUris.size == 1) 2 else 3
+                val spanCount = if (attachments.size == 1) 2 else 3
                 binding.attachmentsGrid.layoutManager = GridLayoutManager(requireContext(), spanCount)
-                binding.attachmentsGrid.adapter = AttachmentGridAdapter(imageUris) { index ->
-                    val uriStrings = imageUris.map { it.toString() }.toTypedArray()
+                binding.attachmentsGrid.adapter = AttachmentGridAdapter(attachments) { index ->
+                    val uriStrings = attachments.map { it.toString() }.toTypedArray()
                     val intent = android.content.Intent(
                         requireContext(),
                         dev.heckr.ptdl.ui.viewer.ImageViewerActivity::class.java
@@ -146,15 +146,23 @@ private class AttachmentGridAdapter(
         }
 
         fun bind(position: Int) {
-            b.attachmentThumb.load(uris[position]) {
+            val uri = uris[position]
+            b.attachmentThumb.load(uri) {
                 crossfade(true)
                 size(300, 300)
             }
+
+            val lastSeg = uri.lastPathSegment ?: uri.toString()
+            val lower = lastSeg.lowercase(Locale.getDefault())
+            val isVideo = lower.endsWith(".mp4") || lower.endsWith(".webm") || lower.endsWith(".mkv") || lower.endsWith(".mov") || lower.endsWith(".3gp")
+            b.attachmentPlayIcon.isVisible = isVideo
+
             b.root.setOnClickListener { onClick(position) }
         }
 
         fun recycle() {
             b.attachmentThumb.setImageDrawable(null)
+            b.attachmentPlayIcon.setImageDrawable(null)
         }
     }
 }

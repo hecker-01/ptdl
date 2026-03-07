@@ -191,12 +191,13 @@ object LocalFileScanner {
         val commentCount: Int,
         val postType: String,
         val canView: Boolean,
-        val imageUris: List<Uri>
+        val imageUris: List<Uri>,
+        val attachmentUris: List<Uri>
     )
 
     fun loadPostDetail(context: Context, postFolderUri: Uri): PostDetail {
         val postDoc = DocumentFile.fromTreeUri(context, postFolderUri)
-            ?: return PostDetail("", "", "", "", "", 0, 0, "text_only", false, emptyList())
+            ?: return PostDetail("", "", "", "", "", 0, 0, "text_only", false, emptyList(), emptyList())
 
         var title = ""
         var content = ""
@@ -235,7 +236,8 @@ object LocalFileScanner {
         }
 
         val imageUris = scanPostImages(context, postFolderUri)
-        return PostDetail(title, content, contentJsonString, contentHtml, publishedAt, likeCount, commentCount, postType, canView, imageUris)
+        val attachmentUris = scanPostAttachments(context, postFolderUri)
+        return PostDetail(title, content, contentJsonString, contentHtml, publishedAt, likeCount, commentCount, postType, canView, imageUris, attachmentUris)
     }
 
     fun scanPostImages(context: Context, postFolderUri: Uri): List<Uri> {
@@ -251,6 +253,26 @@ object LocalFileScanner {
         if (images.isNotEmpty()) return images
 
         return postDoc.findFile("attachments")?.imageFiles() ?: emptyList()
+    }
+
+    fun scanPostAttachments(context: Context, postFolderUri: Uri): List<Uri> {
+        val postDoc = DocumentFile.fromTreeUri(context, postFolderUri) ?: return emptyList()
+        val imageExtensions = setOf("jpg", "jpeg", "png", "webp", "gif")
+        val videoExtensions = setOf("mp4", "webm", "mkv", "mov", "3gp")
+        val allowed = imageExtensions + videoExtensions
+
+        fun DocumentFile.attachmentFiles() = listFiles()
+            .filter { f -> f.isFile && f.name?.substringAfterLast('.', "")?.lowercase() in allowed }
+            .sortedBy { it.name }
+            .map { it.uri }
+
+        val images = postDoc.findFile("images")?.listFiles()
+            ?.filter { f -> f.isFile && f.name?.substringAfterLast('.', "")?.lowercase() in imageExtensions }
+            ?.sortedBy { it.name }
+            ?.map { it.uri } ?: emptyList()
+        if (images.isNotEmpty()) return images
+
+        return postDoc.findFile("attachments")?.attachmentFiles() ?: emptyList()
     }
 
     // --- Helpers -------------------------------------------------------------
