@@ -86,7 +86,7 @@ class MainActivity : AppCompatActivity() {
     fun showIndexingOverlay() {
         indexingOverlay.isVisible = true
         indexingProgress.isIndeterminate = true
-        indexingStatus.text = "Scanning folder\u2026"
+        indexingStatus.text = getString(R.string.scanning_folder)
         indexingPostStatus.isVisible = false
         indexingPostProgress.isVisible = false
     }
@@ -100,19 +100,19 @@ class MainActivity : AppCompatActivity() {
             indexingProgress.isIndeterminate = false
             indexingProgress.max = total
             indexingProgress.progress = 0
-            indexingStatus.text = "Found $total creators"
+            indexingStatus.text = resources.getQuantityString(R.plurals.found_creators, total, total)
             indexingPostStatus.isVisible = true
             indexingPostProgress.isVisible = true
             indexingPostProgress.isIndeterminate = true
-            indexingPostStatus.text = "Scanning posts\u2026"
+            indexingPostStatus.text = getString(R.string.scanning_posts)
         } else if (total > 0) {
             indexingProgress.progress = done
-            indexingStatus.text = "Creators $done / $total"
+            indexingStatus.text = getString(R.string.creators_progress_format, done, total)
         }
     }
 
     fun updateIndexingPostProgress(postsSoFar: Int) {
-        indexingPostStatus.text = "$postsSoFar posts found"
+        indexingPostStatus.text = resources.getQuantityString(R.plurals.posts_found, postsSoFar, postsSoFar)
     }
 }
 

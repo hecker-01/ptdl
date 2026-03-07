@@ -96,9 +96,9 @@ class FavoritesFragment : Fragment() {
 
         val items = mutableListOf<CreatorListItem>()
         items.add(CreatorListItem.Header(
-            name = "Favorites",
-            meta = if (postCount == 1) "1 post" else "$postCount posts",
-            bio = if (allPosts.isEmpty()) "Click the heart on posts to add them to your favorites." else "Your saved posts, in one place",
+            name = getString(R.string.favorites_title),
+            meta = resources.getQuantityString(R.plurals.post_count, postCount, postCount),
+            bio = if (allPosts.isEmpty()) getString(R.string.favorites_empty_hint) else getString(R.string.favorites_subtitle),
             avatarUrl = null,
             coverUrl = null,
             avatarResId = R.drawable.icon_favorite_filled
@@ -106,13 +106,13 @@ class FavoritesFragment : Fragment() {
         items.add(CreatorListItem.SearchBar)
 
         if (shown > 0) {
-            items.add(CreatorListItem.SectionLabel("Posts ($postCount)"))
+            items.add(CreatorListItem.SectionLabel(getString(R.string.posts_section_with_count, postCount)))
             for (i in 0 until shown) items.add(CreatorListItem.Post(filtered[i]))
             if (searchQuery.isBlank() && shown < filtered.size) {
                 items.add(CreatorListItem.LoadMore)
             }
         } else {
-            items.add(CreatorListItem.SectionLabel("Posts (0)"))
+            items.add(CreatorListItem.SectionLabel(getString(R.string.posts_section_zero)))
         }
 
         listAdapter?.submitItems(items)

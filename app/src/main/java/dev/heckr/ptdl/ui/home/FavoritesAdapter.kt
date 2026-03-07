@@ -24,10 +24,10 @@ class FavoritesAdapter(
             binding.root.isVisible = true
             if (list.isEmpty()) {
                 binding.headerIcon.setImageResource(R.drawable.icon_favorite_empty)
-                binding.headerSubtitle.text = "Click the heart on posts to add them to your favorites."
+                binding.headerSubtitle.text = binding.root.context.getString(R.string.favorites_empty_hint)
             } else {
                 binding.headerIcon.setImageResource(R.drawable.icon_favorite_filled)
-                binding.headerSubtitle.text = "Your favorite or saved posts"
+                binding.headerSubtitle.text = binding.root.context.getString(R.string.favorites_header_subtitle)
             }
         }
     }

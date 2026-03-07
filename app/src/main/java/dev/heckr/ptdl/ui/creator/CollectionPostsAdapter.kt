@@ -37,8 +37,8 @@ class CollectionPostsAdapter(
         fun bind(post: PostInfo) {
             b.postTitle.text = post.title
             b.postDate.text = formatDate(post.publishedAt)
-            b.likeCount.text = "♡ ${post.likeCount}"
-            b.commentCount.text = "\uD83D\uDCAC ${post.commentCount}"
+            b.likeCount.text = b.root.context.getString(R.string.like_count_format, post.likeCount)
+            b.commentCount.text = b.root.context.getString(R.string.comment_count_format, post.commentCount)
             b.lockLabel.isVisible = !post.canView
             if (post.thumbnailUri != null) {
                 b.postThumbnail.isVisible = true

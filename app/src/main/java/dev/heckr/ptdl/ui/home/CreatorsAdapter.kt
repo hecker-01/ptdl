@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
+import dev.heckr.ptdl.R
 import dev.heckr.ptdl.data.CreatorInfo
 import dev.heckr.ptdl.databinding.ItemCreatorBinding
 
@@ -20,7 +21,7 @@ class CreatorsAdapter(
         fun bind(creator: CreatorInfo) {
             binding.creatorName.text = creator.name
             binding.creatorSubtitle.text = creator.creationName.ifBlank { creator.folderName }
-            binding.postCount.text = "${creator.postCount} posts"
+            binding.postCount.text = binding.root.context.resources.getQuantityString(R.plurals.post_count, creator.postCount, creator.postCount)
 
             if (creator.coverUrl != null) {
                 binding.coverImage.load(creator.coverUrl) {

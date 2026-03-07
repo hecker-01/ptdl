@@ -27,8 +27,8 @@ class PostsAdapter(
 
             binding.postDate.text = formatDate(post.publishedAt)
 
-            binding.likeCount.text = "♡ ${post.likeCount}"
-            binding.commentCount.text = "💬 ${post.commentCount}"
+            binding.likeCount.text = binding.root.context.getString(R.string.like_count_format, post.likeCount)
+            binding.commentCount.text = binding.root.context.getString(R.string.comment_count_format, post.commentCount)
 
             binding.lockLabel.isVisible = !post.canView
 

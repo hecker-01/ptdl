@@ -10,9 +10,9 @@
 
     <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:gravity="center" android:orientation="vertical" app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="This feature is coming soon" android:textAppearance="?attr/textAppearanceTitleMedium" android:textColor="?attr/colorOnSurfaceVariant" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/feature_coming_soon" android:textAppearance="?attr/textAppearanceTitleMedium" android:textColor="?attr/colorOnSurfaceVariant" />
 
-        <com.google.android.material.button.MaterialButton android:id="@+id/btn_learn_more" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Learn more" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/btn_learn_more" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="@string/learn_more" />
 
     </LinearLayout>
 

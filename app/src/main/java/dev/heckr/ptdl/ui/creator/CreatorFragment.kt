@@ -124,10 +124,10 @@ class CreatorFragment : Fragment() {
 
             if (creator != null) {
                 val meta = buildString {
-                    if (creator.patronCount > 0) append("${creator.patronCount} patrons")
+                    if (creator.patronCount > 0) append(resources.getQuantityString(R.plurals.patron_count, creator.patronCount, creator.patronCount))
                     if (creator.postCount > 0) {
                         if (isNotEmpty()) append(" · ")
-                        append("${creator.postCount} posts")
+                        append(resources.getQuantityString(R.plurals.post_count, creator.postCount, creator.postCount))
                     }
                 }
                 headerItem = CreatorListItem.Header(
@@ -218,17 +218,17 @@ class CreatorFragment : Fragment() {
         // Collections section
         if (collectionsLoaded) {
             if (collections.isNotEmpty()) {
-                items.add(CreatorListItem.SectionLabel("Collections (${collections.size})"))
+                items.add(CreatorListItem.SectionLabel(getString(R.string.collections_section_with_count, collections.size)))
                 items.add(CreatorListItem.CollectionsRow(collections))
             }
         } else {
-            items.add(CreatorListItem.SectionLabel("Collections"))
+            items.add(CreatorListItem.SectionLabel(getString(R.string.collections_section)))
             items.add(CreatorListItem.CollectionsShimmer)
         }
 
         // Posts section
         if (shown > 0) {
-            items.add(CreatorListItem.SectionLabel("Posts (${filtered.size})"))
+            items.add(CreatorListItem.SectionLabel(getString(R.string.posts_section_with_count, filtered.size)))
             for (i in 0 until shown) {
                 items.add(CreatorListItem.Post(filtered[i]))
             }
@@ -236,10 +236,10 @@ class CreatorFragment : Fragment() {
                 items.add(CreatorListItem.LoadMore)
             }
         } else if (postsLoading && !doneCollecting) {
-            items.add(CreatorListItem.SectionLabel("Posts"))
+            items.add(CreatorListItem.SectionLabel(getString(R.string.posts_section)))
             items.add(CreatorListItem.PostsShimmer)
         } else if (doneCollecting) {
-            items.add(CreatorListItem.SectionLabel("Posts (0)"))
+            items.add(CreatorListItem.SectionLabel(getString(R.string.posts_section_zero)))
         }
 
         listAdapter?.submitItems(items)

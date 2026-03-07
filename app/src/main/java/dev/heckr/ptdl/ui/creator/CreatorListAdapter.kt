@@ -194,8 +194,8 @@ class CreatorListAdapter(
         fun bind(post: PostInfo) {
             b.postTitle.text = post.title
             b.postDate.text = formatDate(post.publishedAt)
-            b.likeCount.text = "♡ ${post.likeCount}"
-            b.commentCount.text = "💬 ${post.commentCount}"
+            b.likeCount.text = b.root.context.getString(R.string.like_count_format, post.likeCount)
+            b.commentCount.text = b.root.context.getString(R.string.comment_count_format, post.commentCount)
             b.lockLabel.isVisible = !post.canView
             if (post.thumbnailUri != null) {
                 b.postThumbnail.isVisible = true
@@ -241,7 +241,7 @@ private class CollectionsInnerAdapter(
     inner class VH(private val b: ItemCollectionBinding) : RecyclerView.ViewHolder(b.root) {
         fun bind(c: CollectionInfo) {
             b.collectionTitle.text = c.title
-            b.collectionPostCount.text = "${c.postCount} posts"
+            b.collectionPostCount.text = b.root.context.resources.getQuantityString(R.plurals.post_count, c.postCount, c.postCount)
             val thumb = c.thumbnailUri ?: c.thumbnailUrl
             if (thumb != null) {
                 b.collectionThumbnail.load(thumb) { crossfade(true) }

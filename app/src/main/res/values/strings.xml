@@ -25,4 +25,88 @@
     <string name="members_only">🔒 Members only</string>
     <string name="search_posts">Search posts…</string>
     <string name="favorite">Favorite</string>
+
+    <!-- Plurals -->
+    <plurals name="post_count">
+        <item quantity="one">%d post</item>
+        <item quantity="other">%d posts</item>
+    </plurals>
+    <plurals name="patron_count">
+        <item quantity="one">%d patron</item>
+        <item quantity="other">%d patrons</item>
+    </plurals>
+    <plurals name="attachment_count">
+        <item quantity="one">%d attachment</item>
+        <item quantity="other">%d attachments</item>
+    </plurals>
+
+    <!-- Section labels -->
+    <string name="posts_section_with_count">Posts (%d)</string>
+    <string name="posts_section_zero">Posts (0)</string>
+    <string name="posts_section">Posts</string>
+    <string name="collections_section_with_count">Collections (%d)</string>
+    <string name="collections_section">Collections</string>
+
+    <!-- Stats -->
+    <string name="like_count_format">♡ %d</string>
+    <string name="comment_count_format">💬 %d</string>
+    <string name="like_count_detail_format">♡  %d</string>
+    <string name="comment_count_detail_format">💬  %d</string>
+    <string name="page_indicator_format">%1$d / %2$d</string>
+
+    <!-- Favorites -->
+    <string name="favorites_title">Favorites</string>
+    <string name="favorites_empty_hint">Click the heart on posts to add them to your favorites.</string>
+    <string name="favorites_subtitle">Your saved posts, in one place</string>
+    <string name="favorites_header_subtitle">Your favorite or saved posts</string>
+
+    <!-- Indexing overlay -->
+    <string name="scanning_folder">Scanning folder…</string>
+    <plurals name="found_creators">
+        <item quantity="one">Found %d creator</item>
+        <item quantity="other">Found %d creators</item>
+    </plurals>
+    <string name="scanning_posts">Scanning posts…</string>
+    <string name="creators_progress_format">Creators %1$d / %2$d</string>
+    <plurals name="posts_found">
+        <item quantity="one">%d post found</item>
+        <item quantity="other">%d posts found</item>
+    </plurals>
+
+    <!-- App updates -->
+    <string name="install_permission_denied">Install permission denied</string>
+    <string name="update_available_format">Update available: %s - tap to install</string>
+    <string name="downloading_update">Downloading update…</string>
+    <string name="update_info_missing">Update info missing, cannot download.</string>
+    <string name="checking_for_updates_status">Checking for updates…</string>
+    <string name="up_to_date">You\'re on the latest version</string>
+    <string name="ptdl_update_title">PTDL Update</string>
+    <string name="downloading_version_format">Downloading version %s</string>
+    <string name="download_setup_failed_format">Download setup failed: %s</string>
+    <string name="download_failed_format">Download failed (reason: %d)</string>
+    <string name="download_polling_error_format">Download polling error: %s</string>
+    <string name="download_complete_installing">Download complete, installing…</string>
+    <string name="installing_update">Installing update…</string>
+    <string name="installation_failed_format">Installation failed: %s</string>
+
+    <!-- Settings / About -->
+    <string name="version_format">Version %s</string>
+    <string name="build_format">Build %1$d · %2$s</string>
+    <string name="build_debug">Debug</string>
+    <string name="build_release">Release</string>
+    <string name="invalid_folder_title">Invalid folder</string>
+    <string name="invalid_folder_message">This isn\'t a patreon-dl folder. Please select the root folder created by patreon-dl that contains creator subfolders.</string>
+    <string name="ok">OK</string>
+
+    <!-- Collection -->
+    <string name="collection_fallback_title">Collection</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_download">Download</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Coming soon -->
+    <string name="feature_coming_soon">This feature is coming soon</string>
+    <string name="learn_more">Learn more</string>
 </resources>

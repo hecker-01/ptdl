@@ -98,13 +98,13 @@ class PostDetailFragment : Fragment() {
                 binding.postContent.isVisible = true
             }
 
-            binding.likeCount.text = "♡  ${detail.likeCount}"
-            binding.commentCount.text = "💬  ${detail.commentCount}"
+            binding.likeCount.text = getString(R.string.like_count_detail_format, detail.likeCount)
+            binding.commentCount.text = getString(R.string.comment_count_detail_format, detail.commentCount)
 
             // Thumbnail grid for attachments
             val imageUris = detail.imageUris
             if (imageUris.isNotEmpty()) {
-                binding.attachmentsLabel.text = "${imageUris.size} attachment${if (imageUris.size != 1) "s" else ""}"
+                binding.attachmentsLabel.text = resources.getQuantityString(R.plurals.attachment_count, imageUris.size, imageUris.size)
                 binding.attachmentsLabel.isVisible = true
                 binding.attachmentsGrid.isVisible = true
 

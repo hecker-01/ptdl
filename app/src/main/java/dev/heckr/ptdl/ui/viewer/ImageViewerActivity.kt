@@ -40,11 +40,11 @@ class ImageViewerActivity : AppCompatActivity() {
         viewPager.setCurrentItem(startIndex, false)
 
         if (uris.size > 1) {
-            indicator.text = "${startIndex + 1} / ${uris.size}"
+            indicator.text = getString(R.string.page_indicator_format, startIndex + 1, uris.size)
             indicator.isVisible = true
             viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
                 override fun onPageSelected(position: Int) {
-                    indicator.text = "${position + 1} / ${uris.size}"
+                    indicator.text = getString(R.string.page_indicator_format, position + 1, uris.size)
                 }
             })
         } else {

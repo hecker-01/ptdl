@@ -101,8 +101,8 @@ class SettingsFragment : Fragment() {
 
         // Build info
         val info = requireContext().packageManager.getPackageInfo(requireContext().packageName, 0)
-        binding.aboutVersion.text = "Version ${info.versionName}"
-        binding.aboutBuild.text = "Build ${info.longVersionCode} · ${if (dev.heckr.ptdl.BuildConfig.DEBUG) "Debug" else "Release"}"
+        binding.aboutVersion.text = getString(R.string.version_format, info.versionName)
+        binding.aboutBuild.text = getString(R.string.build_format, info.longVersionCode, if (dev.heckr.ptdl.BuildConfig.DEBUG) getString(R.string.build_debug) else getString(R.string.build_release))
         binding.aboutPackage.text = info.packageName
     }
 
@@ -126,9 +126,9 @@ class SettingsFragment : Fragment() {
                 PatreonRepository.invalidate()
                 updateFolderDisplay()
                 MaterialAlertDialogBuilder(requireContext())
-                    .setTitle("Invalid folder")
-                    .setMessage("This isn't a patreon-dl folder. Please select the root folder created by patreon-dl that contains creator subfolders.")
-                    .setPositiveButton("OK", null)
+                    .setTitle(R.string.invalid_folder_title)
+                    .setMessage(R.string.invalid_folder_message)
+                    .setPositiveButton(R.string.ok, null)
                     .show()
                 return@launch
             }
@@ -163,7 +163,7 @@ class SettingsFragment : Fragment() {
     private fun updateFolderDisplay() {
         val uriString = settingsManager.getString(SettingsManager.KEY_ROOT_URI)
         if (uriString.isBlank()) {
-            binding.folderPathText.text = "Not set"
+            binding.folderPathText.text = getString(R.string.not_set)
             binding.btnClearFolder.isVisible = false
         } else {
             // Show a human-readable path from the URI

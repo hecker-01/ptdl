@@ -14,6 +14,7 @@ import android.os.Looper
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
+import dev.heckr.ptdl.R
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -48,7 +49,7 @@ class AppUpdater(private val fragment: Fragment) {
                     pendingInstallFileName?.let { installApk(context, it) }
                     pendingInstallFileName = null
                 } else {
-                    Toast.makeText(context, "Install permission denied", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.install_permission_denied, Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -57,7 +58,7 @@ class AppUpdater(private val fragment: Fragment) {
     fun syncFromChecker() {
         if (UpdateChecker.updateAvailable) {
             state = State.UPDATE_AVAILABLE
-            notify("Update available: ${UpdateChecker.latestVersion} - tap to install")
+            notify(fragment.requireContext().getString(R.string.update_available_format, UpdateChecker.latestVersion))
         }
     }
 
@@ -72,16 +73,16 @@ class AppUpdater(private val fragment: Fragment) {
                 val version = UpdateChecker.latestVersion
                 if (url != null && version != null) {
                     state = State.DOWNLOADING
-                    notify("Downloading update…")
+                    notify(context.getString(R.string.downloading_update))
                     downloadAndInstallApk(context, url, version)
                 } else {
-                    notify("Update info missing, cannot download.")
+                    notify(context.getString(R.string.update_info_missing))
                 }
             }
             State.DOWNLOADING -> { /* ignore */ }
             else -> {
                 // Trigger a fresh check via the singleton
-                notify("Checking for updates…")
+                notify(context.getString(R.string.checking_for_updates_status))
                 UpdateChecker.addListener(checkerListener)
                 UpdateChecker.check(context)
             }
@@ -92,10 +93,10 @@ class AppUpdater(private val fragment: Fragment) {
         UpdateChecker.removeListener(checkerListener)
         if (UpdateChecker.updateAvailable) {
             state = State.UPDATE_AVAILABLE
-            notify("Update available: ${UpdateChecker.latestVersion} - tap to install")
+            notify(fragment.requireContext().getString(R.string.update_available_format, UpdateChecker.latestVersion))
         } else {
             state = State.IDLE
-            notify("You're on the latest version")
+            notify(fragment.requireContext().getString(R.string.up_to_date))
         }
     }
 
@@ -157,8 +158,8 @@ class AppUpdater(private val fragment: Fragment) {
             )
 
             val request = DownloadManager.Request(Uri.parse(apkUrl))
-                .setTitle("PTDL Update")
-                .setDescription("Downloading version $version")
+                .setTitle(context.getString(R.string.ptdl_update_title))
+                .setDescription(context.getString(R.string.downloading_version_format, version))
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
                 .setDestinationInExternalFilesDir(context, Environment.DIRECTORY_DOWNLOADS, fileName)
                 .setAllowedOverMetered(true)
@@ -170,7 +171,7 @@ class AppUpdater(private val fragment: Fragment) {
             startDownloadPolling(context, dm, fileName)
         } catch (e: Exception) {
             state = State.IDLE
-            val errorMsg = "Download setup failed: ${e.message}"
+            val errorMsg = context.getString(R.string.download_setup_failed_format, e.message)
             notify(errorMsg)
         }
     }
@@ -203,7 +204,7 @@ class AppUpdater(private val fragment: Fragment) {
                                 cursor.close()
                                 downloadCheckRunnable?.let { handler.removeCallbacks(it) }
                                 state = State.IDLE
-                                val errorMsg = "Download failed (reason: $reason)"
+                                val errorMsg = context.getString(R.string.download_failed_format, reason)
                                 notify(errorMsg)
                                 return
                             }
@@ -214,7 +215,7 @@ class AppUpdater(private val fragment: Fragment) {
                 } catch (e: Exception) {
                     downloadCheckRunnable?.let { handler.removeCallbacks(it) }
                     state = State.IDLE
-                    val errorMsg = "Download polling error: ${e.message}"
+                    val errorMsg = context.getString(R.string.download_polling_error_format, e.message)
                     notify(errorMsg)
                 }
             }
@@ -225,8 +226,8 @@ class AppUpdater(private val fragment: Fragment) {
     private fun handleDownloadComplete(context: Context, fileName: String) {
         unregisterReceiver(context)
         state = State.DOWNLOADED
-        notify("Download complete, installing…")
-        Toast.makeText(context, "Installing update…", Toast.LENGTH_SHORT).show()
+        notify(context.getString(R.string.download_complete_installing))
+        Toast.makeText(context, R.string.installing_update, Toast.LENGTH_SHORT).show()
         installApk(context, fileName)
     }
 
@@ -260,7 +261,7 @@ class AppUpdater(private val fragment: Fragment) {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             fragment.startActivity(intent)
         } catch (e: Exception) {
-            Toast.makeText(context, "Installation failed: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, context.getString(R.string.installation_failed_format, e.message), Toast.LENGTH_LONG).show()
         }
     }
 

@@ -10,9 +10,9 @@
         <!-- Name + subtitle -->
         <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:layout_marginStart="10dp">
 
-            <TextView android:id="@+id/header_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Favorites" android:textAppearance="?attr/textAppearanceTitleMedium" android:ellipsize="end" android:maxLines="1" />
+            <TextView android:id="@+id/header_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/favorites_title" android:textAppearance="?attr/textAppearanceTitleMedium" android:ellipsize="end" android:maxLines="1" />
 
-            <TextView android:id="@+id/header_subtitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Your favorite or saved posts" android:textAppearance="?attr/textAppearanceBodySmall" android:textColor="?attr/colorOnSurfaceVariant" android:ellipsize="end" android:maxLines="1" />
+            <TextView android:id="@+id/header_subtitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/favorites_header_subtitle" android:textAppearance="?attr/textAppearanceBodySmall" android:textColor="?attr/colorOnSurfaceVariant" android:ellipsize="end" android:maxLines="1" />
 
         </LinearLayout>
     </LinearLayout>

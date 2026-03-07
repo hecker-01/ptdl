@@ -47,7 +47,7 @@ class CollectionFragment : Fragment() {
 
         binding.toolbar.setNavigationOnClickListener { findNavController().navigateUp() }
 
-        val title = arguments?.getString("collectionTitle") ?: "Collection"
+        val title = arguments?.getString("collectionTitle") ?: getString(R.string.collection_fallback_title)
         val thumbnailUrl = arguments?.getString("collectionThumbnail")
         val creatorUri = arguments?.getString("creatorFolderUri") ?: return
         val postIdsRaw = arguments?.getString("collectionPostIds") ?: return
