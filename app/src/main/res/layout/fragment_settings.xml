@@ -100,21 +100,4 @@
 
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Blocking overlay shown while the folder is being indexed -->
-    <FrameLayout android:id="@+id/indexing_overlay" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#CC000000" android:clickable="true" android:focusable="true" android:visibility="gone">
-
-        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:orientation="vertical" android:gravity="center" android:padding="24dp">
-
-            <TextView android:id="@+id/indexing_status" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/indexing_folder" android:textAppearance="?attr/textAppearanceBodyMedium" android:textColor="#FFFFFFFF" />
-
-            <com.google.android.material.progressindicator.LinearProgressIndicator android:id="@+id/indexing_progress" android:layout_width="260dp" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:indeterminate="true" app:indicatorColor="?attr/colorPrimary" app:trackColor="#44FFFFFF" />
-
-            <TextView android:id="@+id/indexing_post_status" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:text="" android:textAppearance="?attr/textAppearanceBodySmall" android:textColor="#CCFFFFFF" android:visibility="gone" />
-
-            <com.google.android.material.progressindicator.LinearProgressIndicator android:id="@+id/indexing_post_progress" android:layout_width="260dp" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:indeterminate="true" app:indicatorColor="@android:color/white" app:trackColor="#33FFFFFF" android:visibility="gone" />
-
-        </LinearLayout>
-
-    </FrameLayout>
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -48,7 +48,7 @@ class FavoritesFragment : Fragment() {
         listAdapter = CreatorListAdapter(
             onPostClick = { post ->
                 findNavController().navigate(
-                    R.id.postDetailFragment,
+                    R.id.action_favorites_to_post,
                     bundleOf("postFolderUri" to post.folderUri.toString())
                 )
             },
@@ -100,7 +100,8 @@ class FavoritesFragment : Fragment() {
             meta = if (postCount == 1) "1 post" else "$postCount posts",
             bio = if (allPosts.isEmpty()) "Click the heart on posts to add them to your favorites." else "Your saved posts, in one place",
             avatarUrl = null,
-            coverUrl = null
+            coverUrl = null,
+            avatarResId = R.drawable.icon_favorite_filled
         ))
         items.add(CreatorListItem.SearchBar)
 

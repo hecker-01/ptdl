@@ -16,6 +16,7 @@ import dev.heckr.ptdl.data.PatreonRepository
 import dev.heckr.ptdl.databinding.FragmentSettingsBinding
 import dev.heckr.ptdl.settings.AppUpdater
 import dev.heckr.ptdl.settings.SettingsManager
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -106,11 +107,8 @@ class SettingsFragment : Fragment() {
     }
 
     private fun startIndexing(uri: Uri) {
-        binding.indexingOverlay.isVisible = true
-        binding.indexingProgress.isIndeterminate = true
-        binding.indexingStatus.text = "Scanning folder\u2026"
-        binding.indexingPostStatus.isVisible = false
-        binding.indexingPostProgress.isVisible = false
+        val mainActivity = activity as? dev.heckr.ptdl.MainActivity ?: return
+        mainActivity.showIndexingOverlay()
         binding.btnSelectFolder.isEnabled = false
         binding.btnClearFolder.isEnabled = false
 
@@ -121,34 +119,36 @@ class SettingsFragment : Fragment() {
                     onCreatorProgress = { done, total ->
                         withContext(Dispatchers.Main) {
                             if (_binding == null) return@withContext
-                            if (done == 0 && total > 0) {
-                                binding.indexingProgress.isIndeterminate = false
-                                binding.indexingProgress.max = total
-                                binding.indexingProgress.progress = 0
-                                binding.indexingStatus.text = "Found $total creators"
-                                binding.indexingPostStatus.isVisible = true
-                                binding.indexingPostProgress.isVisible = true
-                                binding.indexingPostProgress.isIndeterminate = true
-                                binding.indexingPostStatus.text = "Scanning posts\u2026"
-                            } else if (total > 0) {
-                                binding.indexingProgress.progress = done
-                                binding.indexingStatus.text = "Creators $done / $total"
-                            }
+                            mainActivity.updateIndexingCreatorProgress(done, total)
                         }
                     },
                     onPostProgress = { postsSoFar ->
                         withContext(Dispatchers.Main) {
                             if (_binding == null) return@withContext
-                            binding.indexingPostStatus.text = "$postsSoFar posts found"
+                            mainActivity.updateIndexingPostProgress(postsSoFar)
                         }
                     }
                 )
             }
             if (_binding != null) {
-                binding.indexingOverlay.isVisible = false
+                mainActivity.hideIndexingOverlay()
                 binding.btnSelectFolder.isEnabled = true
                 binding.btnClearFolder.isEnabled = true
-                updateFolderDisplay()
+
+                val creators = PatreonRepository.getCachedCreators()
+                if (creators.isEmpty()) {
+                    // Not a valid patreon-dl folder
+                    settingsManager.remove(SettingsManager.KEY_ROOT_URI)
+                    PatreonRepository.invalidate()
+                    updateFolderDisplay()
+                    MaterialAlertDialogBuilder(requireContext())
+                        .setTitle("Invalid folder")
+                        .setMessage("This isn't a patreon-dl folder. Please select the root folder created by patreon-dl that contains creator subfolders.")
+                        .setPositiveButton("OK", null)
+                        .show()
+                } else {
+                    updateFolderDisplay()
+                }
             }
         }
     }
