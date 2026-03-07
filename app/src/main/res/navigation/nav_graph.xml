@@ -7,7 +7,9 @@
         <action android:id="@+id/action_home_to_favorites" app:destination="@id/favoritesFragment" />
     </fragment>
 
-    <fragment android:id="@+id/favoritesFragment" android:name="dev.heckr.ptdl.ui.favorites.FavoritesFragment" android:label="Favorites" />
+    <fragment android:id="@+id/favoritesFragment" android:name="dev.heckr.ptdl.ui.favorites.FavoritesFragment" android:label="Favorites">
+        <action android:id="@+id/action_favorites_to_post" app:destination="@id/postDetailFragment" />
+    </fragment>
 
     <fragment android:id="@+id/navigation_favorites" android:name="dev.heckr.ptdl.ui.SoonFragment" android:label="Favorites" />
 

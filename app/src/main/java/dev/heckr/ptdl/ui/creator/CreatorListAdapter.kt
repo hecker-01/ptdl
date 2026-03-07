@@ -7,8 +7,13 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import android.content.res.ColorStateList
+import android.util.TypedValue
+import android.widget.ImageView
 import coil.load
+import dev.heckr.ptdl.R
 import dev.heckr.ptdl.data.CollectionInfo
+import dev.heckr.ptdl.data.PatreonRepository
 import dev.heckr.ptdl.data.PostInfo
 import dev.heckr.ptdl.databinding.ItemCollectionBinding
 import dev.heckr.ptdl.databinding.ItemCollectionsRowBinding
@@ -32,7 +37,8 @@ sealed class CreatorListItem {
         val meta: String,
         val bio: String,
         val avatarUrl: String?,
-        val coverUrl: String?          // not used here; toolbar handles it
+        val coverUrl: String?,         // not used here; toolbar handles it
+        val avatarResId: Int? = null   // optional drawable when no URL (e.g. favorites icon)
     ) : CreatorListItem()
 
     data object SearchBar : CreatorListItem()
@@ -128,7 +134,27 @@ class CreatorListAdapter(
             } else {
                 b.creatorBio.isVisible = false
             }
-            h.avatarUrl?.let { b.avatarImage.load(it) { crossfade(true) } }
+            if (h.avatarUrl != null) {
+                b.avatarImage.setPadding(0, 0, 0, 0)
+                b.avatarImage.scaleType = ImageView.ScaleType.CENTER_CROP
+                b.avatarImage.imageTintList = null
+                b.avatarImage.load(h.avatarUrl) { crossfade(true) }
+            } else if (h.avatarResId != null) {
+                val pad = (8 * b.avatarImage.resources.displayMetrics.density).toInt()
+                b.avatarImage.setPadding(pad, pad, pad, pad)
+                b.avatarImage.scaleType = ImageView.ScaleType.CENTER_INSIDE
+                b.avatarImage.setImageResource(h.avatarResId)
+                val ctx = b.avatarImage.context
+                val tv = TypedValue()
+                ctx.theme.resolveAttribute(android.R.attr.colorPrimary, tv, true)
+                b.avatarImage.imageTintList = ColorStateList.valueOf(tv.data)
+                ctx.theme.resolveAttribute(android.R.attr.colorBackground, tv, true)
+                // Use colorOnPrimary via the Material theme overlay
+                val ta = ctx.obtainStyledAttributes(intArrayOf(com.google.android.material.R.attr.colorOnPrimary))
+                val onPrimary = ta.getColor(0, tv.data)
+                ta.recycle()
+                b.avatarImage.setBackgroundColor(onPrimary)
+            }
         }
     }
 
@@ -176,6 +202,16 @@ class CreatorListAdapter(
                 b.postThumbnail.load(post.thumbnailUri) { crossfade(true) }
             } else {
                 b.postThumbnail.isVisible = false
+            }
+            val isFav = PatreonRepository.isFavorite(b.root.context, post.id)
+            b.favoriteButton.setImageResource(
+                if (isFav) R.drawable.icon_favorite_filled else R.drawable.icon_favorite_empty
+            )
+            b.favoriteButton.setOnClickListener {
+                val nowFav = PatreonRepository.toggleFavorite(b.root.context, post.id)
+                b.favoriteButton.setImageResource(
+                    if (nowFav) R.drawable.icon_favorite_filled else R.drawable.icon_favorite_empty
+                )
             }
             b.root.setOnClickListener { onPostClick(post) }
         }

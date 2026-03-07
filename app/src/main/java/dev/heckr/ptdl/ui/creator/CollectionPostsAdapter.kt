@@ -5,6 +5,8 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
+import dev.heckr.ptdl.R
+import dev.heckr.ptdl.data.PatreonRepository
 import dev.heckr.ptdl.data.PostInfo
 import dev.heckr.ptdl.databinding.ItemPostBinding
 import java.time.OffsetDateTime
@@ -43,6 +45,16 @@ class CollectionPostsAdapter(
                 b.postThumbnail.load(post.thumbnailUri) { crossfade(true) }
             } else {
                 b.postThumbnail.isVisible = false
+            }
+            val isFav = PatreonRepository.isFavorite(b.root.context, post.id)
+            b.favoriteButton.setImageResource(
+                if (isFav) R.drawable.icon_favorite_filled else R.drawable.icon_favorite_empty
+            )
+            b.favoriteButton.setOnClickListener {
+                val nowFav = PatreonRepository.toggleFavorite(b.root.context, post.id)
+                b.favoriteButton.setImageResource(
+                    if (nowFav) R.drawable.icon_favorite_filled else R.drawable.icon_favorite_empty
+                )
             }
             b.root.setOnClickListener { onPostClick(post) }
         }

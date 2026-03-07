@@ -11,6 +11,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.channels.awaitClose
 import android.content.SharedPreferences
@@ -26,6 +27,7 @@ object PatreonRepository {
     @Volatile private var cachedRootUri: String? = null
     @Volatile private var cachedCreators: List<CreatorInfo> = emptyList()
     private val postsCache = ConcurrentHashMap<String, List<PostInfo>>()
+    private val _cacheUpdated = MutableSharedFlow<Unit>(replay = 0, extraBufferCapacity = 1)
 
     // --- Public API ----------------------------------------------------------
 
@@ -45,6 +47,7 @@ object PatreonRepository {
                     if (!postsCache.containsKey(key)) {
                         val posts = LocalFileScanner.scanPosts(appContext, creator.folderUri)
                         postsCache[key] = posts
+                        _cacheUpdated.tryEmit(Unit)
                         preloadThumbnails(appContext, posts)
                     }
                 }
@@ -87,6 +90,7 @@ object PatreonRepository {
                     }
                 val sorted = posts.sortedByDescending { it.publishedAt }
                 postsCache[key] = sorted
+                _cacheUpdated.tryEmit(Unit)
                 preloadThumbnails(appContext, sorted)
                 onCreatorProgress?.invoke(creatorsDone.incrementAndGet(), total)
                 posts.size
@@ -122,6 +126,7 @@ object PatreonRepository {
         postsCache[key]?.let { return it }
         val posts = LocalFileScanner.scanPosts(context, creatorUri)
         postsCache[key] = posts
+        _cacheUpdated.tryEmit(Unit)
         return posts
     }
 
@@ -160,6 +165,7 @@ object PatreonRepository {
     /** Stores a fully-scanned post list in the cache. */
     fun cachePosts(key: String, posts: List<PostInfo>) {
         postsCache[key] = posts
+        _cacheUpdated.tryEmit(Unit)
     }
 
     // --- Favorites integration (backed by SettingsManager prefs) -----------------
@@ -186,7 +192,7 @@ object PatreonRepository {
         return found.sortedByDescending { it.publishedAt }
     }
 
-    /** Flow that emits the favorites snapshot and updates when the prefs change. */
+    /** Flow that emits the favorites snapshot and updates when the prefs change or cache updates. */
     fun favoritesFlow(context: Context): Flow<List<PostInfo>> {
         return kotlinx.coroutines.flow.callbackFlow {
             val sendSnapshot = {
@@ -202,7 +208,13 @@ object PatreonRepository {
             }
             settings.registerChangeListener(listener)
 
-            awaitClose { settings.unregisterChangeListener(listener) }
+            // Re-emit when post cache is updated (e.g. warmUp finishes loading creators)
+            val cacheJob = launch { _cacheUpdated.collect { sendSnapshot() } }
+
+            awaitClose {
+                settings.unregisterChangeListener(listener)
+                cacheJob.cancel()
+            }
         }
     }
 
