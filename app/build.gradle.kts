@@ -93,6 +93,7 @@ dependencies {
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.json)
     implementation(libs.coil)
+    implementation(libs.markwon)
     implementation(libs.androidx.documentfile)
 
     testImplementation(libs.junit)
