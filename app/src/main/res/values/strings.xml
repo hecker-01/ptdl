@@ -88,6 +88,14 @@
     <string name="download_complete_installing">Download complete, installing…</string>
     <string name="installing_update">Installing update…</string>
     <string name="installation_failed_format">Installation failed: %s</string>
+    <string name="update_dialog_title_format">Update to %s</string>
+    <string name="update_dialog_size_format">Download size: %s</string>
+    <string name="download_initializing">Initializing download…</string>
+    <string name="download_progress_format">Downloading… %d%%</string>
+    <string name="installing_update_status">Installing update…</string>
+    <string name="update_button">Update</string>
+    <string name="cancel_button">Cancel</string>
+    <string name="no_changelog">No changelog available.</string>
 
     <!-- Settings / About -->
     <string name="version_format">Version %s</string>

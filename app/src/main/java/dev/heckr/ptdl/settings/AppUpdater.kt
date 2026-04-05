@@ -28,12 +28,14 @@ import java.io.File
  */
 class AppUpdater(private val fragment: Fragment) {
 
-    enum class State { IDLE, UPDATE_AVAILABLE, DOWNLOADING, DOWNLOADED }
+    enum class State { IDLE, UPDATE_AVAILABLE, DOWNLOADING, DOWNLOADED, INSTALLING }
 
     var state: State = State.IDLE
         private set
 
     var onStateChanged: ((State, String) -> Unit)? = null
+    /** Progress callback: 0–100 for determinate, -1 for indeterminate */
+    var onDownloadProgress: ((Int) -> Unit)? = null
 
     private var downloadId: Long = -1
     private var downloadReceiver: BroadcastReceiver? = null
@@ -64,28 +66,36 @@ class AppUpdater(private val fragment: Fragment) {
 
     /**
      * Call this when the user taps the update card.
-     * If update already known → download. Otherwise trigger a fresh check.
+     * If update already known → signal to show dialog. Otherwise trigger a fresh check.
+     * Returns true if state is UPDATE_AVAILABLE (caller should show dialog).
      */
-    fun onUpdateTapped(context: Context) {
+    fun onUpdateTapped(context: Context): Boolean {
         when (state) {
-            State.UPDATE_AVAILABLE -> {
-                val url = UpdateChecker.latestApkUrl
-                val version = UpdateChecker.latestVersion
-                if (url != null && version != null) {
-                    state = State.DOWNLOADING
-                    notify(context.getString(R.string.downloading_update))
-                    downloadAndInstallApk(context, url, version)
-                } else {
-                    notify(context.getString(R.string.update_info_missing))
-                }
-            }
-            State.DOWNLOADING -> { /* ignore */ }
+            State.UPDATE_AVAILABLE -> return true
+            State.DOWNLOADING, State.INSTALLING -> { /* ignore */ }
             else -> {
                 // Trigger a fresh check via the singleton
                 notify(context.getString(R.string.checking_for_updates_status))
                 UpdateChecker.addListener(checkerListener)
                 UpdateChecker.check(context)
             }
+        }
+        return false
+    }
+
+    /**
+     * Start the download after the user confirms in the dialog.
+     */
+    fun startDownload(context: Context) {
+        val url = UpdateChecker.latestApkUrl
+        val version = UpdateChecker.latestVersion
+        if (url != null && version != null) {
+            state = State.DOWNLOADING
+            onDownloadProgress?.invoke(-1)
+            notify(context.getString(R.string.download_initializing))
+            downloadAndInstallApk(context, url, version)
+        } else {
+            notify(context.getString(R.string.update_info_missing))
         }
     }
 
@@ -184,13 +194,6 @@ class AppUpdater(private val fragment: Fragment) {
                     if (cursor != null && cursor.moveToFirst()) {
                         val statusIndex = cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS)
                         val status = cursor.getInt(statusIndex)
-                        val statusStr = when(status) {
-                            1 -> "PENDING"
-                            2 -> "RUNNING"
-                            4 -> "SUCCESSFUL"
-                            8 -> "FAILED"
-                            else -> "UNKNOWN($status)"
-                        }                        
                         when (status) {
                             DownloadManager.STATUS_SUCCESSFUL -> {
                                 cursor.close()
@@ -204,9 +207,25 @@ class AppUpdater(private val fragment: Fragment) {
                                 cursor.close()
                                 downloadCheckRunnable?.let { handler.removeCallbacks(it) }
                                 state = State.IDLE
+                                onDownloadProgress?.invoke(-1)
                                 val errorMsg = context.getString(R.string.download_failed_format, reason)
                                 notify(errorMsg)
                                 return
+                            }
+                            DownloadManager.STATUS_RUNNING -> {
+                                val bytesIdx = cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR)
+                                val totalIdx = cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES)
+                                if (bytesIdx >= 0 && totalIdx >= 0) {
+                                    val bytesDownloaded = cursor.getLong(bytesIdx)
+                                    val totalBytes = cursor.getLong(totalIdx)
+                                    if (totalBytes > 0) {
+                                        val percent = ((bytesDownloaded * 100) / totalBytes).toInt().coerceIn(0, 100)
+                                        handler.post {
+                                            onDownloadProgress?.invoke(percent)
+                                            notify(context.getString(R.string.download_progress_format, percent))
+                                        }
+                                    }
+                                }
                             }
                         }
                         cursor.close()
@@ -225,9 +244,9 @@ class AppUpdater(private val fragment: Fragment) {
 
     private fun handleDownloadComplete(context: Context, fileName: String) {
         unregisterReceiver(context)
-        state = State.DOWNLOADED
-        notify(context.getString(R.string.download_complete_installing))
-        Toast.makeText(context, R.string.installing_update, Toast.LENGTH_SHORT).show()
+        state = State.INSTALLING
+        onDownloadProgress?.invoke(-1)
+        notify(context.getString(R.string.installing_update_status))
         installApk(context, fileName)
     }
 

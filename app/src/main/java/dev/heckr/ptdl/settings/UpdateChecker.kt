@@ -19,6 +19,10 @@ object UpdateChecker {
         private set
     var latestApkUrl: String? = null
         private set
+    var releaseBody: String? = null
+        private set
+    var apkSizeBytes: Long = 0L
+        private set
     var updateAvailable: Boolean = false
         private set
 
@@ -55,16 +59,20 @@ object UpdateChecker {
                     if (isNewerVersion(currentVersion, tagVersion)) {
                         val assets = json.getJSONArray("assets")
                         var apkUrl: String? = null
+                        var apkSize = 0L
                         for (i in 0 until assets.length()) {
                             val asset = assets.getJSONObject(i)
                             if (asset.getString("name").endsWith(".apk")) {
                                 apkUrl = asset.getString("browser_download_url")
+                                apkSize = asset.optLong("size", 0L)
                                 break
                             }
                         }
                         if (apkUrl != null) {
                             latestApkUrl = apkUrl
                             latestVersion = tagVersion
+                            releaseBody = json.optString("body", "")
+                            apkSizeBytes = apkSize
                             updateAvailable = true
                         }
                     }
@@ -82,6 +90,8 @@ object UpdateChecker {
         updateAvailable = false
         latestVersion = null
         latestApkUrl = null
+        releaseBody = null
+        apkSizeBytes = 0L
     }
 
     private fun isNewerVersion(current: String, latest: String): Boolean {
