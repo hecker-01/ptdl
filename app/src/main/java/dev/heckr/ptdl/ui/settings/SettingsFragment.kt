@@ -3,6 +3,7 @@ package dev.heckr.ptdl.ui.settings
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.text.format.Formatter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,7 +17,9 @@ import dev.heckr.ptdl.data.PatreonRepository
 import dev.heckr.ptdl.databinding.FragmentSettingsBinding
 import dev.heckr.ptdl.settings.AppUpdater
 import dev.heckr.ptdl.settings.SettingsManager
+import dev.heckr.ptdl.settings.UpdateChecker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import io.noties.markwon.Markwon
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -59,12 +62,36 @@ class SettingsFragment : Fragment() {
         settingsManager = SettingsManager(requireContext())
 
         // Updates
-        appUpdater.onStateChanged = { _, message ->
+        appUpdater.onStateChanged = fun(state: AppUpdater.State, message: String) {
+            if (_binding == null) return
             binding.updateSubtitle.text = message
+            when (state) {
+                AppUpdater.State.DOWNLOADING, AppUpdater.State.INSTALLING -> {
+                    binding.updateProgress.isVisible = true
+                    binding.updateCard.isClickable = false
+                    binding.updateCard.isFocusable = false
+                }
+                else -> {
+                    binding.updateProgress.isVisible = false
+                    binding.updateCard.isClickable = true
+                    binding.updateCard.isFocusable = true
+                }
+            }
+        }
+        appUpdater.onDownloadProgress = fun(progress: Int) {
+            if (_binding == null) return
+            if (progress < 0) {
+                binding.updateProgress.isIndeterminate = true
+            } else {
+                binding.updateProgress.isIndeterminate = false
+                binding.updateProgress.setProgressCompat(progress, true)
+            }
         }
         appUpdater.syncFromChecker()
         binding.updateCard.setOnClickListener {
-            appUpdater.onUpdateTapped(requireContext())
+            if (appUpdater.onUpdateTapped(requireContext())) {
+                showUpdateDialog()
+            }
         }
 
         binding.btnSelectFolder.setOnClickListener {
@@ -104,6 +131,36 @@ class SettingsFragment : Fragment() {
         binding.aboutVersion.text = getString(R.string.version_format, info.versionName)
         binding.aboutBuild.text = getString(R.string.build_format, info.longVersionCode, if (dev.heckr.ptdl.BuildConfig.DEBUG) getString(R.string.build_debug) else getString(R.string.build_release))
         binding.aboutPackage.text = info.packageName
+    }
+
+    private fun showUpdateDialog() {
+        val ctx = context ?: return
+        val version = UpdateChecker.latestVersion ?: return
+        val body = UpdateChecker.releaseBody
+        val sizeBytes = UpdateChecker.apkSizeBytes
+
+        val dialogView = layoutInflater.inflate(R.layout.dialog_update, null)
+        val sizeText = dialogView.findViewById<android.widget.TextView>(R.id.update_size)
+        val changelogText = dialogView.findViewById<android.widget.TextView>(R.id.update_changelog)
+
+        sizeText.text = getString(R.string.update_dialog_size_format, Formatter.formatFileSize(ctx, sizeBytes))
+
+        if (!body.isNullOrBlank()) {
+            val markwon = Markwon.create(ctx)
+            markwon.setMarkdown(changelogText, body)
+        } else {
+            changelogText.text = getString(R.string.no_changelog)
+        }
+
+        MaterialAlertDialogBuilder(ctx)
+            .setTitle(getString(R.string.update_dialog_title_format, version))
+            .setView(dialogView)
+            .setPositiveButton(R.string.update_button) { dialog, _ ->
+                dialog.dismiss()
+                appUpdater.startDownload(ctx)
+            }
+            .setNegativeButton(R.string.cancel_button, null)
+            .show()
     }
 
     private fun startIndexing(uri: Uri) {
