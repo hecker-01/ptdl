@@ -4,8 +4,12 @@
     <string name="no_folder_selected">No folder selected</string>
     <string name="close">Close</string>
     <string name="no_posts_in_collection">No posts in this collection</string>
-    <string name="no_patreon_dl_folder_selected">No patreon-dl folder selected</string>
-    <string name="open_settings_to_choose_your_patreon_dl_output_directory">Open Settings to choose your patreon-dl output directory.</string>
+    <string
+        name="no_patreon_dl_folder_selected"
+    >No patreon-dl folder selected</string>
+    <string
+        name="open_settings_to_choose_your_patreon_dl_output_directory"
+    >Open Settings to choose your patreon-dl output directory.</string>
     <string name="open_settings">Open Settings</string>
     <string name="source">Source</string>
     <string name="patreon_dl_folder">patreon-dl folder</string>
@@ -17,7 +21,9 @@
     <string name="theme.light">Light</string>
     <string name="theme.dark">Dark</string>
     <string name="about">About</string>
-    <string name="app_description">A local viewer for content downloaded with patreon-dl.</string>
+    <string
+        name="app_description"
+    >A local viewer for content downloaded with patreon-dl.</string>
     <string name="indexing_folder">Indexing folder…</string>
     <string name="updates">Updates</string>
     <string name="check_for_updates">Check for updates</string>
@@ -56,9 +62,13 @@
 
     <!-- Favorites -->
     <string name="favorites_title">Favorites</string>
-    <string name="favorites_empty_hint">Click the heart on posts to add them to your favorites.</string>
+    <string
+        name="favorites_empty_hint"
+    >Click the heart on posts to add them to your favorites.</string>
     <string name="favorites_subtitle">Your saved posts, in one place</string>
-    <string name="favorites_header_subtitle">Your favorite or saved posts</string>
+    <string
+        name="favorites_header_subtitle"
+    >Your favorite or saved posts</string>
 
     <!-- Indexing overlay -->
     <string name="scanning_folder">Scanning folder...</string>
@@ -75,18 +85,30 @@
 
     <!-- App updates -->
     <string name="install_permission_denied">Install permission denied</string>
-    <string name="update_available_format">Update available: %s - tap to install</string>
+    <string
+        name="update_available_format"
+    >Update available: %s - tap to install</string>
     <string name="downloading_update">Downloading update...</string>
-    <string name="update_info_missing">Update info missing, cannot download.</string>
+    <string
+        name="update_info_missing"
+    >Update info missing, cannot download.</string>
     <string name="checking_for_updates_status">Checking for updates...</string>
     <string name="up_to_date">You\'re on the latest version</string>
-    <string name="update_check_failed_format">Couldn\'t check for updates: %s</string>
+    <string
+        name="update_check_failed_format"
+    >Couldn\'t check for updates: %s</string>
     <string name="ptdl_update_title">PTDL Update</string>
     <string name="downloading_version_format">Downloading version %s</string>
-    <string name="download_setup_failed_format">Download setup failed: %s</string>
+    <string
+        name="download_setup_failed_format"
+    >Download setup failed: %s</string>
     <string name="download_failed_format">Download failed (reason: %d)</string>
-    <string name="download_polling_error_format">Download polling error: %s</string>
-    <string name="download_complete_installing">Download complete, installing...</string>
+    <string
+        name="download_polling_error_format"
+    >Download polling error: %s</string>
+    <string
+        name="download_complete_installing"
+    >Download complete, installing...</string>
     <string name="installing_update">Installing update...</string>
     <string name="installation_failed_format">Installation failed: %s</string>
     <string name="update_dialog_title_format">Update to %s</string>
@@ -104,11 +126,16 @@
     <string name="build_debug">Debug</string>
     <string name="build_release">Release</string>
     <string name="invalid_folder_title">Invalid folder</string>
-    <string name="invalid_folder_message">This isn\'t a patreon-dl folder. Please select the root folder created by patreon-dl that contains creator subfolders.</string>
+    <string
+        name="invalid_folder_message"
+    >This isn\'t a patreon-dl folder. Please select the root folder created by patreon-dl that contains creator subfolders.</string>
     <string name="ok">OK</string>
 
     <!-- Collection -->
     <string name="collection_fallback_title">Collection</string>
+
+    <!-- Footer -->
+    <string name="copyright_footer">© PTDL, by heckr.dev</string>
 
     <!-- Navigation -->
     <string name="nav_home">Home</string>

@@ -1,25 +1,75 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:paddingHorizontal="16dp">
+<?xml version="1.0" encoding="utf-8" ?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="16dp"
+>
 
     <!-- Shimmer post card 1 -->
-    <com.google.android.material.card.MaterialCardView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="10dp" android:alpha="0.7" app:cardCornerRadius="16dp" app:cardElevation="0dp" app:strokeWidth="0dp">
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:alpha="0.7"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="0dp"
+    >
 
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+        >
 
-            <View android:layout_width="match_parent" android:layout_height="140dp" android:background="?attr/colorSurfaceVariant" />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="140dp"
+                android:background="?attr/colorSurfaceVariant"
+            />
 
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="14dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="14dp"
+            >
 
-                <View android:layout_width="match_parent" android:layout_height="16dp" android:background="?attr/colorSurfaceVariant" />
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="16dp"
+                    android:background="?attr/colorSurfaceVariant"
+                />
 
-                <View android:layout_width="120dp" android:layout_height="12dp" android:layout_marginTop="8dp" android:background="?attr/colorSurfaceVariant" />
+                <View
+                    android:layout_width="120dp"
+                    android:layout_height="12dp"
+                    android:layout_marginTop="8dp"
+                    android:background="?attr/colorSurfaceVariant"
+                />
 
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:orientation="horizontal">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal"
+                >
 
-                    <View android:layout_width="50dp" android:layout_height="12dp" android:background="?attr/colorSurfaceVariant" />
+                    <View
+                        android:layout_width="50dp"
+                        android:layout_height="12dp"
+                        android:background="?attr/colorSurfaceVariant"
+                    />
 
-                    <View android:layout_width="50dp" android:layout_height="12dp" android:layout_marginStart="14dp" android:background="?attr/colorSurfaceVariant" />
+                    <View
+                        android:layout_width="50dp"
+                        android:layout_height="12dp"
+                        android:layout_marginStart="14dp"
+                        android:background="?attr/colorSurfaceVariant"
+                    />
 
                 </LinearLayout>
 
@@ -30,19 +80,55 @@
     </com.google.android.material.card.MaterialCardView>
 
     <!-- Shimmer post card 2 -->
-    <com.google.android.material.card.MaterialCardView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="10dp" android:alpha="0.5" app:cardCornerRadius="16dp" app:cardElevation="0dp" app:strokeWidth="0dp">
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:alpha="0.5"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="0dp"
+    >
 
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="14dp">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="14dp"
+        >
 
-            <View android:layout_width="match_parent" android:layout_height="16dp" android:background="?attr/colorSurfaceVariant" />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="16dp"
+                android:background="?attr/colorSurfaceVariant"
+            />
 
-            <View android:layout_width="90dp" android:layout_height="12dp" android:layout_marginTop="8dp" android:background="?attr/colorSurfaceVariant" />
+            <View
+                android:layout_width="90dp"
+                android:layout_height="12dp"
+                android:layout_marginTop="8dp"
+                android:background="?attr/colorSurfaceVariant"
+            />
 
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:orientation="horizontal">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal"
+            >
 
-                <View android:layout_width="50dp" android:layout_height="12dp" android:background="?attr/colorSurfaceVariant" />
+                <View
+                    android:layout_width="50dp"
+                    android:layout_height="12dp"
+                    android:background="?attr/colorSurfaceVariant"
+                />
 
-                <View android:layout_width="50dp" android:layout_height="12dp" android:layout_marginStart="14dp" android:background="?attr/colorSurfaceVariant" />
+                <View
+                    android:layout_width="50dp"
+                    android:layout_height="12dp"
+                    android:layout_marginStart="14dp"
+                    android:background="?attr/colorSurfaceVariant"
+                />
 
             </LinearLayout>
 
@@ -51,13 +137,35 @@
     </com.google.android.material.card.MaterialCardView>
 
     <!-- Shimmer post card 3 (faintest) -->
-    <com.google.android.material.card.MaterialCardView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="10dp" android:alpha="0.3" app:cardCornerRadius="16dp" app:cardElevation="0dp" app:strokeWidth="0dp">
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:alpha="0.3"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="0dp"
+    >
 
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="14dp">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="14dp"
+        >
 
-            <View android:layout_width="200dp" android:layout_height="16dp" android:background="?attr/colorSurfaceVariant" />
+            <View
+                android:layout_width="200dp"
+                android:layout_height="16dp"
+                android:background="?attr/colorSurfaceVariant"
+            />
 
-            <View android:layout_width="80dp" android:layout_height="12dp" android:layout_marginTop="8dp" android:background="?attr/colorSurfaceVariant" />
+            <View
+                android:layout_width="80dp"
+                android:layout_height="12dp"
+                android:layout_marginTop="8dp"
+                android:background="?attr/colorSurfaceVariant"
+            />
 
         </LinearLayout>
 

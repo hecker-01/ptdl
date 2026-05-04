@@ -257,4 +257,3 @@ class CreatorFragment : Fragment() {
         _binding = null
     }
 }
-

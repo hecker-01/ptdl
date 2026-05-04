@@ -115,4 +115,3 @@ class MainActivity : AppCompatActivity() {
         indexingPostStatus.text = resources.getQuantityString(R.plurals.posts_found, postsSoFar, postsSoFar)
     }
 }
-

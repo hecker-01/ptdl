@@ -40,4 +40,3 @@ class SoonFragment : Fragment() {
         _binding = null
     }
 }
-

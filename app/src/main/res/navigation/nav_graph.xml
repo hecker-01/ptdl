@@ -1,37 +1,96 @@
-<?xml version="1.0" encoding="utf-8"?>
-<navigation xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto" android:id="@+id/nav_graph" app:startDestination="@id/navigation_home">
+<?xml version="1.0" encoding="utf-8" ?>
+<navigation
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/navigation_home"
+>
 
-    <fragment android:id="@+id/navigation_home" android:name="dev.heckr.ptdl.ui.home.HomeFragment" android:label="Home">
-        <action android:id="@+id/action_home_to_creator" app:destination="@id/creatorFragment" />
-        <action android:id="@+id/action_home_to_favorites" app:destination="@id/favoritesFragment" />
+    <fragment
+        android:id="@+id/navigation_home"
+        android:name="dev.heckr.ptdl.ui.home.HomeFragment"
+        android:label="Home"
+    >
+        <action
+            android:id="@+id/action_home_to_creator"
+            app:destination="@id/creatorFragment"
+        />
+        <action
+            android:id="@+id/action_home_to_favorites"
+            app:destination="@id/favoritesFragment"
+        />
     </fragment>
 
-    <fragment android:id="@+id/favoritesFragment" android:name="dev.heckr.ptdl.ui.favorites.FavoritesFragment" android:label="Favorites">
-        <action android:id="@+id/action_favorites_to_post" app:destination="@id/postDetailFragment" />
+    <fragment
+        android:id="@+id/favoritesFragment"
+        android:name="dev.heckr.ptdl.ui.favorites.FavoritesFragment"
+        android:label="Favorites"
+    >
+        <action
+            android:id="@+id/action_favorites_to_post"
+            app:destination="@id/postDetailFragment"
+        />
     </fragment>
 
-    <fragment android:id="@+id/navigation_favorites" android:name="dev.heckr.ptdl.ui.SoonFragment" android:label="Favorites" />
+    <fragment
+        android:id="@+id/navigation_favorites"
+        android:name="dev.heckr.ptdl.ui.SoonFragment"
+        android:label="Favorites"
+    />
 
-    <fragment android:id="@+id/navigation_download" android:name="dev.heckr.ptdl.ui.SoonFragment" android:label="Download" />
+    <fragment
+        android:id="@+id/navigation_download"
+        android:name="dev.heckr.ptdl.ui.SoonFragment"
+        android:label="Download"
+    />
 
-    <fragment android:id="@+id/navigation_settings" android:name="dev.heckr.ptdl.ui.settings.SettingsFragment" android:label="Settings" />
+    <fragment
+        android:id="@+id/navigation_settings"
+        android:name="dev.heckr.ptdl.ui.settings.SettingsFragment"
+        android:label="Settings"
+    />
 
-    <fragment android:id="@+id/creatorFragment" android:name="dev.heckr.ptdl.ui.creator.CreatorFragment" android:label="Creator">
+    <fragment
+        android:id="@+id/creatorFragment"
+        android:name="dev.heckr.ptdl.ui.creator.CreatorFragment"
+        android:label="Creator"
+    >
         <argument android:name="creatorFolderUri" app:argType="string" />
-        <action android:id="@+id/action_creator_to_post" app:destination="@id/postDetailFragment" />
-        <action android:id="@+id/action_creator_to_collection" app:destination="@id/collectionFragment" />
+        <action
+            android:id="@+id/action_creator_to_post"
+            app:destination="@id/postDetailFragment"
+        />
+        <action
+            android:id="@+id/action_creator_to_collection"
+            app:destination="@id/collectionFragment"
+        />
     </fragment>
 
-    <fragment android:id="@+id/collectionFragment" android:name="dev.heckr.ptdl.ui.collection.CollectionFragment" android:label="Collection">
+    <fragment
+        android:id="@+id/collectionFragment"
+        android:name="dev.heckr.ptdl.ui.collection.CollectionFragment"
+        android:label="Collection"
+    >
         <argument android:name="collectionTitle" app:argType="string" />
-        <argument android:name="collectionThumbnail" app:argType="string" app:nullable="true" android:defaultValue="@null" />
+        <argument
+            android:name="collectionThumbnail"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null"
+        />
         <argument android:name="creatorFolderUri" app:argType="string" />
         <argument android:name="collectionPostIds" app:argType="string" />
-        <action android:id="@+id/action_collection_to_post" app:destination="@id/postDetailFragment" />
+        <action
+            android:id="@+id/action_collection_to_post"
+            app:destination="@id/postDetailFragment"
+        />
     </fragment>
 
-    <fragment android:id="@+id/postDetailFragment" android:name="dev.heckr.ptdl.ui.post.PostDetailFragment" android:label="Post">
+    <fragment
+        android:id="@+id/postDetailFragment"
+        android:name="dev.heckr.ptdl.ui.post.PostDetailFragment"
+        android:label="Post"
+    >
         <argument android:name="postFolderUri" app:argType="string" />
     </fragment>
 

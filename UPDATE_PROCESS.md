@@ -172,7 +172,7 @@ Called by `SettingsFragment` after the user confirms via the dialog's "Update" b
 ### Download
 
 - Creates a `DownloadManager.Request`:
-  - Destination: `getExternalFilesDir(DIRECTORY_DOWNLOADS)/PTDL-<version>.apk`
+  - Destination: `getExternalFilesDir(DIRECTORY_DOWNLOADS)/ptdl-<version>.apk`
   - Notification: `VISIBILITY_VISIBLE_NOTIFY_COMPLETED`
 - Listens for completion via `BroadcastReceiver` on `ACTION_DOWNLOAD_COMPLETE`
 - Polls every **500 ms** as a backup (handler-based loop)
@@ -265,7 +265,7 @@ User taps "Check for updates" card
                                     ├── subtitle = "Initializing download…"
                                     ├── card becomes non-clickable
                                     │
-                                    └─► DownloadManager.Request → PTDL-X.Y.Z.apk
+                                    └─► DownloadManager.Request → ptdl-X.Y.Z.apk
                                             │
                                             └─► 500ms poll loop
                                                     ├── STATUS_RUNNING → onDownloadProgress(0–100)

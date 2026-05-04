@@ -1,2 +1,4 @@
 /build
 /release
+cordium-dev.keystore
+cordium-release.keystore

@@ -133,7 +133,7 @@ class AppUpdater(private val fragment: Fragment) {
         // Stop polling
         downloadCheckRunnable?.let { handler.removeCallbacks(it) }
         downloadCheckRunnable = null
-        
+
         // Cancel existing download
         if (downloadId != -1L) {
             try {
@@ -142,7 +142,7 @@ class AppUpdater(private val fragment: Fragment) {
             } catch (_: Exception) {}
             downloadId = -1
         }
-        
+
         // Unregister receiver
         unregisterReceiver(context)
     }
@@ -153,8 +153,8 @@ class AppUpdater(private val fragment: Fragment) {
         try {
             // Clean up any previous download attempt
             cleanupDownload(context)
-            
-            val fileName = "PTDL-$version.apk"
+
+            val fileName = "ptdl-$version.apk"
 
             downloadReceiver = object : BroadcastReceiver() {
                 override fun onReceive(ctx: Context?, intent: Intent?) {
@@ -177,13 +177,13 @@ class AppUpdater(private val fragment: Fragment) {
                 .setTitle(context.getString(R.string.ptdl_update_title))
                 .setDescription(context.getString(R.string.downloading_version_format, version))
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                .setDestinationInExternalFilesDir(context, Environment.DIRECTORY_DOWNLOADS, fileName)
+                .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
                 .setAllowedOverMetered(true)
                 .setAllowedOverRoaming(true)
 
             val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
             downloadId = dm.enqueue(request)
-            
+
             startDownloadPolling(context, dm, fileName)
         } catch (e: Exception) {
             state = State.IDLE
@@ -270,7 +270,7 @@ class AppUpdater(private val fragment: Fragment) {
                 }
             }
 
-            val file = File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), fileName)
+            val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), fileName)
             if (!file.exists()) {
                 return
             }

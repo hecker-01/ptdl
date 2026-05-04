@@ -3,7 +3,11 @@ package dev.heckr.ptdl.ui.settings
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.text.SpannableString
+import android.text.Spanned
 import android.text.format.Formatter
+import android.text.method.LinkMovementMethod
+import android.text.style.ClickableSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -126,6 +130,21 @@ class SettingsFragment : Fragment() {
 
         updateFolderDisplay()
 
+        // Copyright footer
+        val footerText = getString(R.string.copyright_footer)
+        val domain = "heckr.dev"
+        val linkStart = footerText.indexOf(domain)
+        if (linkStart >= 0) {
+            val spannable = SpannableString(footerText)
+            spannable.setSpan(object : ClickableSpan() {
+                override fun onClick(widget: View) {
+                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://$domain")))
+                }
+            }, linkStart, linkStart + domain.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            binding.copyrightFooter.text = spannable
+            binding.copyrightFooter.movementMethod = LinkMovementMethod.getInstance()
+        }
+
         // Build info
         val info = requireContext().packageManager.getPackageInfo(requireContext().packageName, 0)
         binding.aboutVersion.text = getString(R.string.version_format, info.versionName)
@@ -244,4 +263,3 @@ class SettingsFragment : Fragment() {
         _binding = null
     }
 }
-
