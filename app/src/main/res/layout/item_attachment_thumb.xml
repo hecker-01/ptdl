@@ -8,13 +8,30 @@
     app:cardElevation="1dp"
 >
 
-    <ImageView
-        android:id="@+id/attachment_thumb"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="100dp"
-        android:scaleType="centerCrop"
-        android:background="?attr/colorSurfaceVariant"
-        android:contentDescription="@null"
-    />
+    >
+
+        <ImageView
+            android:id="@+id/attachment_thumb"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:background="?attr/colorSurfaceVariant"
+            android:contentDescription="@null"
+        />
+
+        <ImageView
+            android:id="@+id/play_icon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:src="@drawable/icon_play_circle"
+            android:contentDescription="@null"
+            android:visibility="gone"
+        />
+
+    </FrameLayout>
 
 </com.google.android.material.card.MaterialCardView>

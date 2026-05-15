@@ -95,6 +95,8 @@ dependencies {
     implementation(libs.coil)
     implementation(libs.markwon)
     implementation(libs.androidx.documentfile)
+    implementation(libs.media3.exoplayer)
+    implementation(libs.media3.ui)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -1,5 +1,6 @@
 package dev.heckr.ptdl.ui.post
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -13,9 +14,8 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
-import coil.transform.RoundedCornersTransformation
-import dev.heckr.ptdl.R
 import androidx.documentfile.provider.DocumentFile
+import dev.heckr.ptdl.R
 import dev.heckr.ptdl.data.PatreonRepository
 import dev.heckr.ptdl.data.LocalFileScanner
 import dev.heckr.ptdl.databinding.FragmentPostDetailBinding
@@ -101,25 +101,35 @@ class PostDetailFragment : Fragment() {
             binding.likeCount.text = getString(R.string.like_count_detail_format, detail.likeCount)
             binding.commentCount.text = getString(R.string.comment_count_detail_format, detail.commentCount)
 
-            // Thumbnail grid for attachments
+            // Unified image + video grid
             val imageUris = detail.imageUris
-            if (imageUris.isNotEmpty()) {
-                binding.attachmentsLabel.text = resources.getQuantityString(R.plurals.attachment_count, imageUris.size, imageUris.size)
+            val allMedia = imageUris.map { MediaAttachment(it, false) } +
+                detail.videoUris.map { MediaAttachment(it, true) }
+
+            if (allMedia.isNotEmpty()) {
+                binding.attachmentsLabel.text = resources.getQuantityString(
+                    R.plurals.attachment_count, allMedia.size, allMedia.size
+                )
                 binding.attachmentsLabel.isVisible = true
                 binding.attachmentsGrid.isVisible = true
 
-                val spanCount = if (imageUris.size == 1) 2 else 3
+                val spanCount = if (allMedia.size == 1) 2 else 3
                 binding.attachmentsGrid.layoutManager = GridLayoutManager(requireContext(), spanCount)
-                binding.attachmentsGrid.adapter = AttachmentGridAdapter(imageUris) { index ->
-                    val uriStrings = imageUris.map { it.toString() }.toTypedArray()
-                    val intent = android.content.Intent(
-                        requireContext(),
-                        dev.heckr.ptdl.ui.viewer.ImageViewerActivity::class.java
-                    ).apply {
-                        putExtra("imageUris", uriStrings)
-                        putExtra("startIndex", index)
+                binding.attachmentsGrid.adapter = AttachmentGridAdapter(allMedia) { index ->
+                    val item = allMedia[index]
+                    if (item.isVideo) {
+                        startActivity(
+                            Intent(requireContext(), dev.heckr.ptdl.ui.viewer.VideoPlayerActivity::class.java)
+                                .putExtra("videoUri", item.uri.toString())
+                        )
+                    } else {
+                        val imageUriStrings = imageUris.map { it.toString() }.toTypedArray()
+                        startActivity(
+                            Intent(requireContext(), dev.heckr.ptdl.ui.viewer.ImageViewerActivity::class.java)
+                                .putExtra("imageUris", imageUriStrings)
+                                .putExtra("startIndex", index)
+                        )
                     }
-                    startActivity(intent)
                 }
             }
         }
@@ -131,12 +141,14 @@ class PostDetailFragment : Fragment() {
     }
 }
 
+private data class MediaAttachment(val uri: Uri, val isVideo: Boolean)
+
 private class AttachmentGridAdapter(
-    private val uris: List<Uri>,
+    private val items: List<MediaAttachment>,
     private val onClick: (Int) -> Unit
 ) : RecyclerView.Adapter<AttachmentGridAdapter.VH>() {
 
-    override fun getItemCount() = uris.size
+    override fun getItemCount() = items.size
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
         val b = ItemAttachmentThumbBinding.inflate(
@@ -155,7 +167,6 @@ private class AttachmentGridAdapter(
         RecyclerView.ViewHolder(b.root) {
 
         init {
-            // Add spacing via layout params
             val spacing = (4 * b.root.resources.displayMetrics.density).toInt()
             (b.root.layoutParams as? ViewGroup.MarginLayoutParams)?.let {
                 it.setMargins(spacing, spacing, spacing, spacing)
@@ -168,15 +179,23 @@ private class AttachmentGridAdapter(
         }
 
         fun bind(position: Int) {
-            b.attachmentThumb.load(uris[position]) {
-                crossfade(true)
-                size(300, 300)
+            val item = items[position]
+            if (item.isVideo) {
+                b.attachmentThumb.setImageDrawable(null)
+                b.playIcon.isVisible = true
+            } else {
+                b.attachmentThumb.load(item.uri) {
+                    crossfade(true)
+                    size(300, 300)
+                }
+                b.playIcon.isVisible = false
             }
             b.root.setOnClickListener { onClick(position) }
         }
 
         fun recycle() {
             b.attachmentThumb.setImageDrawable(null)
+            b.playIcon.isVisible = false
         }
     }
 }

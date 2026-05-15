@@ -205,12 +205,13 @@ object LocalFileScanner {
         val commentCount: Int,
         val postType: String,
         val canView: Boolean,
-        val imageUris: List<Uri>
+        val imageUris: List<Uri>,
+        val videoUris: List<Uri>
     )
 
     fun loadPostDetail(context: Context, postFolderUri: Uri): PostDetail {
         val postDoc = DocumentFile.fromTreeUri(context, postFolderUri)
-            ?: return PostDetail("", "", "", "", "", 0, 0, "text_only", false, emptyList())
+            ?: return PostDetail("", "", "", "", "", 0, 0, "text_only", false, emptyList(), emptyList())
 
         var title = ""
         var content = ""
@@ -249,7 +250,8 @@ object LocalFileScanner {
         }
 
         val imageUris = scanPostImages(context, postFolderUri)
-        return PostDetail(title, content, contentJsonString, contentHtml, publishedAt, likeCount, commentCount, postType, canView, imageUris)
+        val videoUris = scanPostVideos(context, postFolderUri)
+        return PostDetail(title, content, contentJsonString, contentHtml, publishedAt, likeCount, commentCount, postType, canView, imageUris, videoUris)
     }
 
     fun scanPostImages(context: Context, postFolderUri: Uri): List<Uri> {
@@ -265,6 +267,20 @@ object LocalFileScanner {
         if (images.isNotEmpty()) return images
 
         return postDoc.findFile("attachments")?.imageFiles() ?: emptyList()
+    }
+
+    fun scanPostVideos(context: Context, postFolderUri: Uri): List<Uri> {
+        val postDoc = DocumentFile.fromTreeUri(context, postFolderUri) ?: return emptyList()
+        val videoExtensions = setOf("mp4", "m4v", "mkv", "webm", "mov", "avi")
+
+        fun DocumentFile.videoFiles() = listFiles()
+            .filter { f -> f.isFile && f.name?.substringAfterLast('.', "")?.lowercase() in videoExtensions }
+            .sortedBy { it.name }
+            .map { it.uri }
+
+        val fromAttachments = postDoc.findFile("attachments")?.videoFiles() ?: emptyList()
+        val fromRoot = postDoc.videoFiles()
+        return (fromAttachments + fromRoot).distinctBy { it.toString() }
     }
 
     // --- Helpers -------------------------------------------------------------
