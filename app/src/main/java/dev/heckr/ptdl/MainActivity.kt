@@ -12,7 +12,12 @@ import androidx.core.view.isVisible
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.progressindicator.LinearProgressIndicator
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
+import dev.heckr.ptdl.settings.AppLockManager
 import dev.heckr.ptdl.settings.SettingsManager
 
 class MainActivity : AppCompatActivity() {
@@ -25,6 +30,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var indexingProgress: LinearProgressIndicator
     private lateinit var indexingPostStatus: TextView
     private lateinit var indexingPostProgress: LinearProgressIndicator
+
+    // Lock overlay views
+    private lateinit var lockOverlay: FrameLayout
+    private lateinit var btnUnlock: MaterialButton
+
+    private var pendingLock = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         settingsManager = SettingsManager(this)
@@ -48,6 +59,11 @@ class MainActivity : AppCompatActivity() {
         indexingPostStatus = findViewById(R.id.indexing_post_status)
         indexingPostProgress = findViewById(R.id.indexing_post_progress)
 
+        // Lock overlay views
+        lockOverlay = findViewById(R.id.lock_overlay)
+        btnUnlock = findViewById(R.id.btn_unlock)
+        btnUnlock.setOnClickListener { triggerAuth() }
+
         // Check for updates on boot
         dev.heckr.ptdl.settings.UpdateChecker.check(this)
 
@@ -56,13 +72,12 @@ class MainActivity : AppCompatActivity() {
             if (dev.heckr.ptdl.settings.UpdateChecker.updateAvailable) {
                 val badge = bottomNav.getOrCreateBadge(R.id.navigation_settings)
                 badge.isVisible = true
-                badge.clearNumber() // Show dot only
+                badge.clearNumber()
             } else {
                 bottomNav.removeBadge(R.id.navigation_settings)
             }
         }
         dev.heckr.ptdl.settings.UpdateChecker.addListener(updateBadge)
-        // Set initial badge state
         updateBadge()
 
         // Hide the bottom bar while inside creator/post detail screens
@@ -82,6 +97,71 @@ class MainActivity : AppCompatActivity() {
             insets
         }
     }
+
+    override fun onStart() {
+        super.onStart()
+        if (AppLockManager.isEnabled(this) && !AppLockManager.isSessionUnlocked) {
+            pendingLock = true
+            lockOverlay.isVisible = true
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (pendingLock) {
+            pendingLock = false
+            triggerAuth()
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        AppLockManager.lockSession()
+    }
+
+    @Suppress("OVERRIDE_DEPRECATION")
+    override fun onBackPressed() {
+        if (lockOverlay.isVisible) {
+            moveTaskToBack(true)
+            return
+        }
+        @Suppress("DEPRECATION")
+        super.onBackPressed()
+    }
+
+    private fun triggerAuth() {
+        if (!lockOverlay.isVisible) return
+        when (AppLockManager.getLockType(this)) {
+            AppLockManager.TYPE_PIN -> showPinUnlockDialog()
+            else -> AppLockManager.authenticate(this, onSuccess = { lockOverlay.isVisible = false })
+        }
+    }
+
+    private fun showPinUnlockDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_pin_entry, null)
+        val pinLayout = dialogView.findViewById<TextInputLayout>(R.id.pin_input_layout)
+        val pinInput = dialogView.findViewById<TextInputEditText>(R.id.pin_input)
+        pinLayout.hint = getString(R.string.lock_enter_pin_hint)
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.lock_prompt_title)
+            .setView(dialogView)
+            .setCancelable(false)
+            .setPositiveButton(R.string.lock_unlock_button) { dialog, _ ->
+                val pin = pinInput.text?.toString() ?: ""
+                if (AppLockManager.verifyPin(this, pin)) {
+                    AppLockManager.markUnlocked()
+                    lockOverlay.isVisible = false
+                    dialog.dismiss()
+                } else {
+                    pinLayout.error = getString(R.string.lock_wrong_pin)
+                }
+            }
+            .setNegativeButton(android.R.string.cancel) { _, _ -> moveTaskToBack(true) }
+            .show()
+    }
+
+    // --- Indexing overlay ---
 
     fun showIndexingOverlay() {
         indexingOverlay.isVisible = true

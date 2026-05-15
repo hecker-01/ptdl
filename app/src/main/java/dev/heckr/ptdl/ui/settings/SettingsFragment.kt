@@ -15,14 +15,17 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import dev.heckr.ptdl.R
 import dev.heckr.ptdl.ThemeManager
 import dev.heckr.ptdl.data.PatreonRepository
 import dev.heckr.ptdl.databinding.FragmentSettingsBinding
+import dev.heckr.ptdl.settings.AppLockManager
 import dev.heckr.ptdl.settings.AppUpdater
 import dev.heckr.ptdl.settings.SettingsManager
 import dev.heckr.ptdl.settings.UpdateChecker
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import io.noties.markwon.Markwon
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -98,10 +101,7 @@ class SettingsFragment : Fragment() {
             }
         }
 
-        binding.btnSelectFolder.setOnClickListener {
-            pickFolder.launch(null)
-        }
-
+        binding.btnSelectFolder.setOnClickListener { pickFolder.launch(null) }
         binding.btnClearFolder.setOnClickListener {
             settingsManager.remove(SettingsManager.KEY_ROOT_URI)
             PatreonRepository.invalidate()
@@ -128,6 +128,9 @@ class SettingsFragment : Fragment() {
             ThemeManager.applyNightMode(settingsManager)
         }
 
+        // App Lock
+        setupLockSection()
+
         updateFolderDisplay()
 
         // Copyright footer
@@ -148,9 +151,182 @@ class SettingsFragment : Fragment() {
         // Build info
         val info = requireContext().packageManager.getPackageInfo(requireContext().packageName, 0)
         binding.aboutVersion.text = getString(R.string.version_format, info.versionName)
-        binding.aboutBuild.text = getString(R.string.build_format, info.longVersionCode, if (dev.heckr.ptdl.BuildConfig.DEBUG) getString(R.string.build_debug) else getString(R.string.build_release))
+        binding.aboutBuild.text = getString(
+            R.string.build_format, info.longVersionCode,
+            if (dev.heckr.ptdl.BuildConfig.DEBUG) getString(R.string.build_debug)
+            else getString(R.string.build_release)
+        )
         binding.aboutPackage.text = info.packageName
     }
+
+    // --- App Lock section ---
+
+    private var applyingLockState = false
+
+    private fun setupLockSection() {
+        val lockEnabled = AppLockManager.isEnabled(requireContext())
+        applyingLockState = true
+        binding.switchAppLock.isChecked = lockEnabled
+        applyingLockState = false
+        setLockMethodRowVisible(lockEnabled)
+        updateLockMethodLabel()
+
+        binding.switchAppLock.setOnCheckedChangeListener { _, isChecked ->
+            if (applyingLockState) return@setOnCheckedChangeListener
+            if (isChecked) {
+                // Revert until setup completes
+                applyingLockState = true
+                binding.switchAppLock.isChecked = false
+                applyingLockState = false
+                showEnableLockDialog()
+            } else {
+                AppLockManager.disable(requireContext())
+                setLockMethodRowVisible(false)
+            }
+        }
+
+        binding.lockMethodRow.setOnClickListener {
+            showChangeLockMethodDialog()
+        }
+    }
+
+    private fun setLockMethodRowVisible(visible: Boolean) {
+        binding.lockMethodDivider.isVisible = visible
+        binding.lockMethodRow.isVisible = visible
+    }
+
+    private fun updateLockMethodLabel() {
+        val type = AppLockManager.getLockType(requireContext())
+        binding.lockMethodValue.text = getString(
+            if (type == AppLockManager.TYPE_PIN) R.string.lock_method_pin
+            else R.string.lock_method_device
+        )
+    }
+
+    private fun showEnableLockDialog() {
+        val methods = arrayOf(
+            getString(R.string.lock_method_device),
+            getString(R.string.lock_method_pin)
+        )
+        var selectedIndex = 0
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.lock_choose_method)
+            .setSingleChoiceItems(methods, 0) { _, which -> selectedIndex = which }
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                if (selectedIndex == 0) enableDeviceLock()
+                else showPinSetupDialog(isChanging = false)
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun showChangeLockMethodDialog() {
+        val currentType = AppLockManager.getLockType(requireContext())
+        val currentIndex = if (currentType == AppLockManager.TYPE_PIN) 1 else 0
+        val methods = arrayOf(
+            getString(R.string.lock_method_device),
+            getString(R.string.lock_method_pin)
+        )
+        var selectedIndex = currentIndex
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.lock_change_method_title)
+            .setSingleChoiceItems(methods, currentIndex) { _, which -> selectedIndex = which }
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                when {
+                    selectedIndex == 0 && currentType != AppLockManager.TYPE_DEVICE -> enableDeviceLock()
+                    selectedIndex == 1 -> showPinSetupDialog(isChanging = true)
+                }
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun enableDeviceLock() {
+        if (!AppLockManager.canUseDeviceLock(requireContext())) {
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.lock_no_screen_lock_title)
+                .setMessage(R.string.lock_no_screen_lock_message)
+                .setPositiveButton(R.string.ok, null)
+                .show()
+            return
+        }
+        // Verify with biometric before enabling, so we confirm it works
+        AppLockManager.authenticate(
+            requireActivity(),
+            onSuccess = {
+                AppLockManager.enable(requireContext(), AppLockManager.TYPE_DEVICE)
+                AppLockManager.markUnlocked()
+                applyingLockState = true
+                binding.switchAppLock.isChecked = true
+                applyingLockState = false
+                setLockMethodRowVisible(true)
+                updateLockMethodLabel()
+            }
+        )
+    }
+
+    private fun showPinSetupDialog(isChanging: Boolean) {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_pin_entry, null)
+        val pinLayout = dialogView.findViewById<TextInputLayout>(R.id.pin_input_layout)
+        val pinInput = dialogView.findViewById<TextInputEditText>(R.id.pin_input)
+        pinLayout.hint = getString(R.string.lock_setup_pin_hint)
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.lock_setup_pin_title)
+            .setView(dialogView)
+            .setPositiveButton(android.R.string.ok) { _, _ -> /* handled below via button intercept */ }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+            .also { dialog ->
+                // Override positive button so we can validate without closing on error
+                dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                    val pin = pinInput.text?.toString() ?: ""
+                    if (pin.length < 4) {
+                        pinLayout.error = getString(R.string.lock_pin_too_short)
+                        return@setOnClickListener
+                    }
+                    pinLayout.error = null
+                    dialog.dismiss()
+                    showPinConfirmDialog(pin, isChanging)
+                }
+            }
+    }
+
+    private fun showPinConfirmDialog(pin: String, isChanging: Boolean) {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_pin_entry, null)
+        val pinLayout = dialogView.findViewById<TextInputLayout>(R.id.pin_input_layout)
+        val pinInput = dialogView.findViewById<TextInputEditText>(R.id.pin_input)
+        pinLayout.hint = getString(R.string.lock_confirm_pin_hint)
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.lock_setup_pin_title)
+            .setView(dialogView)
+            .setPositiveButton(android.R.string.ok) { _, _ -> }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+            .also { dialog ->
+                dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                    val confirm = pinInput.text?.toString() ?: ""
+                    if (confirm != pin) {
+                        pinLayout.error = getString(R.string.lock_pin_mismatch)
+                        return@setOnClickListener
+                    }
+                    AppLockManager.setupPin(requireContext(), pin)
+                    AppLockManager.enable(requireContext(), AppLockManager.TYPE_PIN)
+                    AppLockManager.markUnlocked()
+                    applyingLockState = true
+                    binding.switchAppLock.isChecked = true
+                    applyingLockState = false
+                    setLockMethodRowVisible(true)
+                    updateLockMethodLabel()
+                    dialog.dismiss()
+                }
+            }
+    }
+
+    // --- Update dialog ---
 
     private fun showUpdateDialog() {
         val ctx = context ?: return
@@ -182,6 +358,8 @@ class SettingsFragment : Fragment() {
             .show()
     }
 
+    // --- Folder ---
+
     private fun startIndexing(uri: Uri) {
         val mainActivity = activity as? dev.heckr.ptdl.MainActivity ?: return
         mainActivity.showIndexingOverlay()
@@ -189,7 +367,6 @@ class SettingsFragment : Fragment() {
         binding.btnClearFolder.isEnabled = false
 
         viewLifecycleOwner.lifecycleScope.launch {
-            // Fast multi-threaded validation first
             val isValid = withContext(Dispatchers.IO) {
                 dev.heckr.ptdl.data.LocalFileScanner.isValidPatreonDlFolder(requireContext(), uri)
             }
@@ -209,7 +386,6 @@ class SettingsFragment : Fragment() {
                 return@launch
             }
 
-            // Valid folder — proceed with full indexing
             withContext(Dispatchers.IO) {
                 PatreonRepository.warmUpAwait(
                     requireContext(), uri,
@@ -242,16 +418,13 @@ class SettingsFragment : Fragment() {
             binding.folderPathText.text = getString(R.string.not_set)
             binding.btnClearFolder.isVisible = false
         } else {
-            // Show a human-readable path from the URI
             val uri = Uri.parse(uriString)
             val displayPath = try {
                 uri.lastPathSegment
-                    ?.substringAfter(":")   // strip "primary:" prefix
-                    ?.replace("%2F", "/")   // decode slashes
+                    ?.substringAfter(":")
+                    ?.replace("%2F", "/")
                     ?: uriString
-            } catch (_: Exception) {
-                uriString
-            }
+            } catch (_: Exception) { uriString }
             binding.folderPathText.text = displayPath
             binding.btnClearFolder.isVisible = true
         }

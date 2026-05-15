@@ -17,6 +17,9 @@ class SettingsManager(context: Context) {
     fun putString(key: String, value: String) =
         prefs.edit().putString(key, value).apply()
 
+    fun putBoolean(key: String, value: Boolean) =
+        prefs.edit().putBoolean(key, value).apply()
+
     fun remove(key: String) =
         prefs.edit().remove(key).apply()
 
@@ -58,5 +61,8 @@ class SettingsManager(context: Context) {
     companion object {
         const val KEY_ROOT_URI = "pref_patreon_dl_root_uri"
         const val KEY_FAVORITES = "pref_favorites_set"
+        const val KEY_APP_LOCK_ENABLED = "pref_app_lock_enabled"
+        const val KEY_APP_LOCK_TYPE = "pref_app_lock_type"
+        const val KEY_APP_LOCK_PIN_HASH = "pref_app_lock_pin_hash"
     }
 }

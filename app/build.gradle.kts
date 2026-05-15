@@ -97,6 +97,7 @@ dependencies {
     implementation(libs.androidx.documentfile)
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.ui)
+    implementation(libs.biometric)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -145,4 +145,28 @@
     <!-- Coming soon -->
     <string name="feature_coming_soon">This feature is coming soon</string>
     <string name="learn_more">Learn more</string>
+
+    <!-- App Lock -->
+    <string name="security">Security</string>
+    <string name="app_lock">App Lock</string>
+    <string name="app_lock_subtitle">Require authentication when opening the app</string>
+    <string name="lock_method">Lock method</string>
+    <string name="lock_method_device">Biometrics / Screen lock</string>
+    <string name="lock_method_pin">Custom PIN</string>
+    <string name="lock_choose_method">Choose lock method</string>
+    <string name="lock_prompt_title">Unlock PTDL</string>
+    <string name="lock_prompt_subtitle">Use biometrics or screen lock to continue</string>
+    <string name="lock_subtitle">App is locked</string>
+    <string name="lock_unlock_button">Unlock</string>
+    <string name="lock_setup_pin_title">Set up PIN</string>
+    <string name="lock_setup_pin_hint">New PIN (at least 4 digits)</string>
+    <string name="lock_confirm_pin_hint">Confirm PIN</string>
+    <string name="lock_enter_pin_hint">Enter PIN</string>
+    <string name="lock_pin_mismatch">PINs don\'t match. Try again.</string>
+    <string name="lock_pin_too_short">PIN must be at least 4 digits.</string>
+    <string name="lock_wrong_pin">Incorrect PIN.</string>
+    <string name="lock_no_screen_lock_title">No screen lock set up</string>
+    <string name="lock_no_screen_lock_message">Please set up a screen lock (PIN, pattern, or password) in your device settings first.</string>
+    <string name="lock_change_method_title">Change lock method</string>
+    <string name="lock_change_pin">Change PIN</string>
 </resources>
