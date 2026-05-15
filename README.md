@@ -80,7 +80,12 @@ A native Android app for browsing content downloaded with [patreon-dl](https://g
 
 ## Building
 
+For APK:
 ```bash
 ./gradlew assembleRelease
+```
+
+For APK + install:
+```bash
 ./gradlew installRelease
 ```
