@@ -1,4 +1,4 @@
-# GitHub-Based In-App Update System — Implementation Guide
+# GitHub-Based In-App Update System - Implementation Guide
 
 A complete guide to implementing a self-contained in-app update system for Android apps that distribute APKs via GitHub Releases. Zero Google Play dependency. Includes version checking, a changelog dialog with rendered Markdown, a download progress bar, and APK installation.
 
@@ -8,15 +8,15 @@ A complete guide to implementing a self-contained in-app update system for Andro
 
 1. [Architecture Overview](#1-architecture-overview)
 2. [Prerequisites & Dependencies](#2-prerequisites--dependencies)
-3. [Step 1 — Android Manifest Setup](#3-step-1--android-manifest-setup)
-4. [Step 2 — FileProvider Configuration](#4-step-2--fileprovider-configuration)
-5. [Step 3 — UpdateChecker (Version Check Singleton)](#5-step-3--updatechecker-version-check-singleton)
-6. [Step 4 — AppUpdater (Download & Install State Machine)](#6-step-4--appupdater-download--install-state-machine)
-7. [Step 5 — Update Card Layout with Progress Bar](#7-step-5--update-card-layout-with-progress-bar)
-8. [Step 6 — Changelog Dialog Layout](#8-step-6--changelog-dialog-layout)
-9. [Step 7 — Settings Fragment (Wiring It All Together)](#9-step-7--settings-fragment-wiring-it-all-together)
-10. [Step 8 — Badge on Navigation (Optional)](#10-step-8--badge-on-navigation-optional)
-11. [Step 9 — Triggering the Check on App Start](#11-step-9--triggering-the-check-on-app-start)
+3. [Step 1 - Android Manifest Setup](#3-step-1--android-manifest-setup)
+4. [Step 2 - FileProvider Configuration](#4-step-2--fileprovider-configuration)
+5. [Step 3 - UpdateChecker (Version Check Singleton)](#5-step-3--updatechecker-version-check-singleton)
+6. [Step 4 - AppUpdater (Download & Install State Machine)](#6-step-4--appupdater-download--install-state-machine)
+7. [Step 5 - Update Card Layout with Progress Bar](#7-step-5--update-card-layout-with-progress-bar)
+8. [Step 6 - Changelog Dialog Layout](#8-step-6--changelog-dialog-layout)
+9. [Step 7 - Settings Fragment (Wiring It All Together)](#9-step-7--settings-fragment-wiring-it-all-together)
+10. [Step 8 - Badge on Navigation (Optional)](#10-step-8--badge-on-navigation-optional)
+11. [Step 9 - Triggering the Check on App Start](#11-step-9--triggering-the-check-on-app-start)
 12. [String Resources](#12-string-resources)
 13. [GitHub Releases Setup](#13-github-releases-setup)
 14. [How the GitHub API Response Maps to the Code](#14-how-the-github-api-response-maps-to-the-code)
@@ -101,7 +101,7 @@ android {
 
 ---
 
-## 3. Step 1 — Android Manifest Setup
+## 3. Step 1 - Android Manifest Setup
 
 Two things are required in your `AndroidManifest.xml`:
 
@@ -140,7 +140,7 @@ Two things are required in your `AndroidManifest.xml`:
 
 ---
 
-## 4. Step 2 — FileProvider Configuration
+## 4. Step 2 - FileProvider Configuration
 
 Create `res/xml/file_paths.xml`:
 
@@ -170,9 +170,9 @@ This generates a `content://` URI that the system installer can read, instead of
 
 ---
 
-## 5. Step 3 — UpdateChecker (Version Check Singleton)
+## 5. Step 3 - UpdateChecker (Version Check Singleton)
 
-This is a Kotlin `object` (singleton) that handles the GitHub API call and version comparison. It's designed to be called from `onCreate()` of your main Activity — fire-and-forget.
+This is a Kotlin `object` (singleton) that handles the GitHub API call and version comparison. It's designed to be called from `onCreate()` of your main Activity - fire-and-forget.
 
 ### Full implementation
 
@@ -320,13 +320,13 @@ segment 1: 2 < 3     → return true (newer)
 ### Guard behavior
 
 - If a check is already in-flight (`checking == true`), `check()` returns immediately
-- If an update was already found (`updateAvailable == true`), `check()` returns immediately — no redundant API calls
+- If an update was already found (`updateAvailable == true`), `check()` returns immediately - no redundant API calls
 - All listeners are called on the **main thread** via `withContext(Dispatchers.Main)`, so UI updates are safe
 - **Error surfacing:** If the API returns a non-200 status code or the request throws an exception (e.g. no network), `lastCheckError` is set with a user-friendly description. The UI layer reads this field and displays the error in the update card subtitle (e.g. "Couldn't check for updates: Server returned HTTP 403"). On a successful 200 response, `lastCheckError` is cleared to `null`.
 
 ---
 
-## 6. Step 4 — AppUpdater (Download & Install State Machine)
+## 6. Step 4 - AppUpdater (Download & Install State Machine)
 
 This class handles the download via `DownloadManager`, tracks progress by polling every 500ms, and installs the APK via `FileProvider` + `ACTION_VIEW`. It's created per-Fragment and tied to the fragment's lifecycle.
 
@@ -377,7 +377,7 @@ class AppUpdater(private val fragment: Fragment) {
     private val handler = Handler(Looper.getMainLooper())
     private var downloadCheckRunnable: Runnable? = null
 
-    // Registered in constructor — MUST be called before fragment STARTED
+    // Registered in constructor - MUST be called before fragment STARTED
     private val installPermissionLauncher: ActivityResultLauncher<Intent> =
         fragment.registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
@@ -717,11 +717,11 @@ class AppUpdater(private val fragment: Fragment) {
 | 500ms polling loop                                    | `DownloadManager` has no streaming progress callback. Polling is the standard approach. 500ms balances responsiveness vs. CPU. |
 | `BroadcastReceiver` + polling as dual mechanism       | The receiver catches completion instantly; polling is the backup if the receiver misses the broadcast (e.g. race condition).   |
 | `installPermissionLauncher` registered in constructor | `registerForActivityResult()` must be called before the fragment reaches `STARTED`. The constructor is the safest place.       |
-| `startDownload()` is separate from `onUpdateTapped()` | Gives the UI layer control — the fragment shows a dialog first, and only calls `startDownload()` after the user confirms.      |
+| `startDownload()` is separate from `onUpdateTapped()` | Gives the UI layer control - the fragment shows a dialog first, and only calls `startDownload()` after the user confirms.      |
 
 ---
 
-## 7. Step 5 — Update Card Layout with Progress Bar
+## 7. Step 5 - Update Card Layout with Progress Bar
 
 Add this inside your settings/preferences layout. This is a `MaterialCardView` containing a title, subtitle, and a `LinearProgressIndicator` that starts hidden.
 
@@ -775,17 +775,17 @@ Add this inside your settings/preferences layout. This is a `MaterialCardView` c
 
 | Phase                   | `isIndeterminate` | `visibility` | Appearance                       |
 | ----------------------- | ----------------- | ------------ | -------------------------------- |
-| Idle / Update available | —                 | `GONE`       | Hidden                           |
+| Idle / Update available | -                 | `GONE`       | Hidden                           |
 | Download initializing   | `true`            | `VISIBLE`    | Animated pulsing/sliding bar     |
 | Downloading (0–100%)    | `false`           | `VISIBLE`    | Filled bar reflecting percentage |
 | Installing              | `true`            | `VISIBLE`    | Animated pulsing/sliding bar     |
-| Error / back to idle    | —                 | `GONE`       | Hidden                           |
+| Error / back to idle    | -                 | `GONE`       | Hidden                           |
 
 ---
 
-## 8. Step 6 — Changelog Dialog Layout
+## 8. Step 6 - Changelog Dialog Layout
 
-Create `res/layout/dialog_update.xml`. This is the **custom view** inflated inside a `MaterialAlertDialogBuilder`. The title and buttons are handled by the dialog builder itself — this layout only contains the body content.
+Create `res/layout/dialog_update.xml`. This is the **custom view** inflated inside a `MaterialAlertDialogBuilder`. The title and buttons are handled by the dialog builder itself - this layout only contains the body content.
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -836,7 +836,7 @@ GitHub release notes can be arbitrarily long. The `ScrollView` with `maxHeight="
 
 ---
 
-## 9. Step 7 — Settings Fragment (Wiring It All Together)
+## 9. Step 7 - Settings Fragment (Wiring It All Together)
 
 This is where all three pieces connect. The fragment:
 
@@ -957,15 +957,15 @@ import io.noties.markwon.Markwon
 
 ### Why `fun()` instead of lambda `{}`
 
-The callbacks use `fun(params) { ... }` (anonymous function) syntax instead of `{ params -> ... }` (lambda) because the anonymous function form supports `return` to exit early. With lambdas, you'd need `return@labelName` but there's no label available for property-assigned lambdas — this causes an "Unresolved label" compile error.
+The callbacks use `fun(params) { ... }` (anonymous function) syntax instead of `{ params -> ... }` (lambda) because the anonymous function form supports `return` to exit early. With lambdas, you'd need `return@labelName` but there's no label available for property-assigned lambdas - this causes an "Unresolved label" compile error.
 
 ```kotlin
-// ✗ WON'T COMPILE — no label for property assignment
+// ✗ WON'T COMPILE - no label for property assignment
 appUpdater.onStateChanged = { state, message ->
     if (_binding == null) return@onStateChanged  // Error: Unresolved label
 }
 
-// ✓ COMPILES — anonymous function supports bare return
+// ✓ COMPILES - anonymous function supports bare return
 appUpdater.onStateChanged = fun(state: AppUpdater.State, message: String) {
     if (_binding == null) return  // Works fine
 }
@@ -973,7 +973,7 @@ appUpdater.onStateChanged = fun(state: AppUpdater.State, message: String) {
 
 ---
 
-## 10. Step 8 — Badge on Navigation (Optional)
+## 10. Step 8 - Badge on Navigation (Optional)
 
 If your app has a `BottomNavigationView`, you can show a red dot on the Settings tab when an update is available. Add this in your `MainActivity.onCreate()`:
 
@@ -997,7 +997,7 @@ updateBadge()  // check immediately for pre-existing state
 
 ---
 
-## 11. Step 9 — Triggering the Check on App Start
+## 11. Step 9 - Triggering the Check on App Start
 
 In your main Activity's `onCreate()`, add one line:
 
@@ -1016,7 +1016,7 @@ This fires a single background coroutine. The API call has a 10-second timeout. 
 
 - **Unauthenticated:** 60 requests/hour per IP
 - For most apps this is fine (one check per app launch)
-- If you need more, add an `Authorization: token YOUR_TOKEN` header — but be careful not to ship tokens in the APK. Consider a server proxy instead.
+- If you need more, add an `Authorization: token YOUR_TOKEN` header - but be careful not to ship tokens in the APK. Consider a server proxy instead.
 
 ---
 
@@ -1029,7 +1029,7 @@ Add these to your `res/values/strings.xml`:
 <string name="check_for_updates">Check for updates</string>
 <string name="tap_to_check">Tap to check for new versions</string>
 <string name="install_permission_denied">Install permission denied</string>
-<string name="update_available_format">Update available: %s — tap to install</string>
+<string name="update_available_format">Update available: %s - tap to install</string>
 <string name="downloading_update">Downloading update…</string>
 <string name="update_info_missing">Update info missing, cannot download.</string>
 <string name="checking_for_updates_status">Checking for updates…</string>
@@ -1061,7 +1061,7 @@ For this system to work, your GitHub release must:
 
 1. **Have a tag** that is a semver string, optionally prefixed with `v` (e.g. `v1.2.3` or `1.2.3`)
 2. **Have at least one `.apk` asset** uploaded to the release
-3. **Optionally have a body** (release notes in Markdown) — this is what appears in the changelog dialog
+3. **Optionally have a body** (release notes in Markdown) - this is what appears in the changelog dialog
 
 ### Creating a release
 
@@ -1116,7 +1116,7 @@ The API endpoint `GET /repos/{owner}/{repo}/releases/latest` returns JSON like t
 | -------------------------------- | --------------------------------------------------- | -------------------------------------------------------- |
 | `tag_name`                       | `UpdateChecker.latestVersion` (after stripping `v`) | Version comparison, dialog title                         |
 | `body`                           | `UpdateChecker.releaseBody`                         | Changelog dialog (rendered as Markdown)                  |
-| `assets[0].name`                 | —                                                   | Matched with `.endsWith(".apk")` to find the right asset |
+| `assets[0].name`                 | -                                                   | Matched with `.endsWith(".apk")` to find the right asset |
 | `assets[0].size`                 | `UpdateChecker.apkSizeBytes`                        | Dialog "Download size: 15.2 MB"                          |
 | `assets[0].browser_download_url` | `UpdateChecker.latestApkUrl`                        | Passed to `DownloadManager`                              |
 
@@ -1257,13 +1257,13 @@ binding.updateCard.setOnClickListener {
 
 - Verify `res/xml/file_paths.xml` contains `<external-files-path name="downloads" path="Download/" />`
 - Verify the `<provider>` in your manifest uses `android:authorities="${applicationId}.fileprovider"` (matches the code's `"${context.packageName}.fileprovider"`)
-- If using build flavors that change `applicationId`, `${applicationId}` and `${context.packageName}` may differ — make sure they match
+- If using build flavors that change `applicationId`, `${applicationId}` and `${context.packageName}` may differ - make sure they match
 
 ### Download fails silently
 
 - Check that `INTERNET` permission is in the manifest
 - Check that the `browser_download_url` from GitHub is accessible (not behind auth)
-- On some devices, `DownloadManager` silently fails if external storage isn't available — use `getExternalFilesDir()` (which doesn't need the `WRITE_EXTERNAL_STORAGE` permission)
+- On some devices, `DownloadManager` silently fails if external storage isn't available - use `getExternalFilesDir()` (which doesn't need the `WRITE_EXTERNAL_STORAGE` permission)
 
 ### Progress bar stays indeterminate
 
@@ -1279,7 +1279,7 @@ binding.updateCard.setOnClickListener {
 
 ### Update check shows an error message
 
-- This means the GitHub API call failed — either the device has no internet, the server returned a non-200 status, or the request timed out
+- This means the GitHub API call failed - either the device has no internet, the server returned a non-200 status, or the request timed out
 - The error is displayed in the update card subtitle (e.g. "Couldn't check for updates: Unable to resolve host...")
 - Tapping the card will retry the check
 - The error clears automatically on the next successful check

@@ -18,6 +18,21 @@ A native Android app for browsing content downloaded with [patreon-dl](https://g
 - **Double-tap zoom** - animated zoom in/out with a decelerate transition
 - **Memory-efficient** - only keeps the current page in memory, loading and unloading on demand
 
+### Video Playback
+
+- **In-post video thumbnails** - video attachments appear alongside images in the attachment grid with a play icon
+- **Full-screen player** - ExoPlayer-based playback with standard transport controls
+- **Rotation support** - fullscreen button rotates to landscape even when the device is locked to portrait; respects sensor orientation when unlocked
+- **Supported formats** - mp4, m4v, mkv, webm, mov, avi
+
+### Security
+
+- **App Lock** - require authentication before the app can be used
+- **Biometrics / Screen lock** - uses your device fingerprint, face unlock, or PIN/pattern via Android's BiometricPrompt
+- **Custom PIN** - set a separate 4–8 digit PIN independent of your device lock; stored as a SHA-256 hash
+- **Lock trigger** - choose between locking every time you leave the app or only when it's fully closed
+- **Recents protection** - when set to lock on exit, the lock screen is shown in the app switcher instead of your content
+
 ### Performance
 
 - **Parallel scanning** - creators, collections, and posts are scanned concurrently (8 parallel workers) for fast indexing over SAF
@@ -46,16 +61,19 @@ A native Android app for browsing content downloaded with [patreon-dl](https://g
 
 1. Download content with [patreon-dl](https://github.com/patrickkfkan/patreon-dl)
 2. Install PTDL on your Android device (API 31+ / Android 12+)
-3. Open Settings > Select your patreon-dl folder
+3. Open Settings and select your patreon-dl folder
 4. Browse your content
 
 ## Tech Stack
 
-| ------------- | ---------------------------------------- |
+| | |
+|---|---|
 | Language | Kotlin |
 | UI | View Binding + Material 3 |
 | Navigation | Jetpack Navigation Component |
-| Image Loading | Coil 2.7 |
+| Image loading | Coil 2.7 |
+| Video playback | Media3 ExoPlayer |
+| Authentication | AndroidX Biometric |
 | Concurrency | Kotlin Coroutines (Flow, Channel, async) |
 | Storage | SAF DocumentFile |
 | Min SDK | 31 (Android 12) |

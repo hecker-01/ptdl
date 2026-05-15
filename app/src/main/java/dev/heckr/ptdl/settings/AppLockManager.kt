@@ -87,7 +87,7 @@ object AppLockManager {
                 if (!silent) onError?.invoke(errString.toString())
             }
 
-            override fun onAuthenticationFailed() { /* wrong attempt — prompt stays open */ }
+            override fun onAuthenticationFailed() { /* wrong attempt - prompt stays open */ }
         })
 
         val info = BiometricPrompt.PromptInfo.Builder()

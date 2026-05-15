@@ -1,12 +1,12 @@
-# Update Process & Settings Badge — How It Works
+# Update Process & Settings Badge - How It Works
 
 ## Overview
 
-The update system is **fully self-contained** — no WorkManager, no Services, no Retrofit, no DataStore. It uses a coroutine for the network check, `DownloadManager` for the download, and a `BroadcastReceiver` for install. Everything is triggered once at app start. When an update is found, the user sees a **changelog dialog** with version info, download size, and rendered markdown release notes before confirming, followed by an **inline progress bar** in the update card.
+The update system is **fully self-contained** - no WorkManager, no Services, no Retrofit, no DataStore. It uses a coroutine for the network check, `DownloadManager` for the download, and a `BroadcastReceiver` for install. Everything is triggered once at app start. When an update is found, the user sees a **changelog dialog** with version info, download size, and rendered markdown release notes before confirming, followed by an **inline progress bar** in the update card.
 
 ---
 
-## 1. Entry Point — `MainActivity.onCreate()`
+## 1. Entry Point - `MainActivity.onCreate()`
 
 [app/src/main/java/dev/heckr/ptdl/MainActivity.kt](app/src/main/java/dev/heckr/ptdl/MainActivity.kt)
 
@@ -34,11 +34,11 @@ UpdateChecker.addListener(updateBadge)
 updateBadge() // check immediately in case already detected
 ```
 
-The badge callback is registered as a listener on `UpdateChecker`. When the check finishes, `UpdateChecker` calls all listeners on the main thread — including this one, which shows/hides the red dot.
+The badge callback is registered as a listener on `UpdateChecker`. When the check finishes, `UpdateChecker` calls all listeners on the main thread - including this one, which shows/hides the red dot.
 
 ---
 
-## 2. Version Check — `UpdateChecker` (Singleton)
+## 2. Version Check - `UpdateChecker` (Singleton)
 
 [app/src/main/java/dev/heckr/ptdl/settings/UpdateChecker.kt](app/src/main/java/dev/heckr/ptdl/settings/UpdateChecker.kt)
 
@@ -63,7 +63,7 @@ The badge callback is registered as a listener on `UpdateChecker`. When the chec
 ### Guards
 
 - Skips if `checking == true` (already in-flight)
-- Skips if `updateAvailable == true` (already found one — no point re-checking)
+- Skips if `updateAvailable == true` (already found one - no point re-checking)
 
 ### Public API
 
@@ -88,9 +88,9 @@ UpdateChecker.clear()                 // reset all state
 
 The layout has a `MaterialCardView` (`@id/update_card`) with:
 
-- `@id/update_title` — static label "Check for updates"
-- `@id/update_subtitle` — dynamic status text, starts as "Tap to check for new versions"
-- `@id/update_progress` — a `LinearProgressIndicator`, initially hidden (`gone`), used to show download/install progress
+- `@id/update_title` - static label "Check for updates"
+- `@id/update_subtitle` - dynamic status text, starts as "Tap to check for new versions"
+- `@id/update_progress` - a `LinearProgressIndicator`, initially hidden (`gone`), used to show download/install progress
 
 `SettingsFragment` creates an `AppUpdater` in `onCreate()` and calls `syncFromChecker()` in `onViewCreated()` to immediately reflect any state `UpdateChecker` already found.
 
@@ -131,7 +131,7 @@ When the user taps the card in `UPDATE_AVAILABLE` state, a `MaterialAlertDialogB
 
 ---
 
-## 4. Download & Install — `AppUpdater`
+## 4. Download & Install - `AppUpdater`
 
 [app/src/main/java/dev/heckr/ptdl/settings/AppUpdater.kt](app/src/main/java/dev/heckr/ptdl/settings/AppUpdater.kt)
 
@@ -146,7 +146,7 @@ IDLE → UPDATE_AVAILABLE → DOWNLOADING → INSTALLING
 | State              | Subtitle text shown                          | Progress bar                |
 | ------------------ | -------------------------------------------- | --------------------------- |
 | `IDLE`             | "Tap to check for new versions"              | Hidden                      |
-| `UPDATE_AVAILABLE` | "Update available: X.Y.Z — tap to install"   | Hidden                      |
+| `UPDATE_AVAILABLE` | "Update available: X.Y.Z - tap to install"   | Hidden                      |
 | `DOWNLOADING`      | "Initializing download…" → "Downloading… N%" | Indeterminate → Determinate |
 | `INSTALLING`       | "Installing update…"                         | Indeterminate               |
 
@@ -209,15 +209,15 @@ The badge is a Material **`BadgeDrawable`** on the bottom navigation bar's Setti
 | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `UpdateChecker.check()` runs, finds no update           | No badge (or badge removed if already shown)                                                                                                           |
 | `UpdateChecker.check()` finds a newer version           | `badge.isVisible = true`, `badge.clearNumber()` → red dot, no number                                                                                   |
-| App is recreated / `MainActivity.onCreate()` runs again | `updateBadge()` is called immediately — if `UpdateChecker.updateAvailable` is already `true`, badge appears right away without waiting for a new check |
+| App is recreated / `MainActivity.onCreate()` runs again | `updateBadge()` is called immediately - if `UpdateChecker.updateAvailable` is already `true`, badge appears right away without waiting for a new check |
 
 ### Why there's no number
 
-`badge.clearNumber()` is called explicitly — the dot just signals "something needs attention" without a count.
+`badge.clearNumber()` is called explicitly - the dot just signals "something needs attention" without a count.
 
 ### When does it go away?
 
-Currently it **only goes away** if `UpdateChecker.updateAvailable` is `false` — which only happens if the check was never run or if the app is reinstalled with the new version (resetting the singleton). There is no explicit "dismiss" action after tapping the update card.
+Currently it **only goes away** if `UpdateChecker.updateAvailable` is `false` - which only happens if the check was never run or if the app is reinstalled with the new version (resetting the singleton). There is no explicit "dismiss" action after tapping the update card.
 
 ---
 

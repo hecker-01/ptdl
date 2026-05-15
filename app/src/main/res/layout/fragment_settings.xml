@@ -245,7 +245,7 @@
 
                     </LinearLayout>
 
-                    <!-- Lock method row — only visible when lock is enabled -->
+                    <!-- Lock method row - only visible when lock is enabled -->
                     <com.google.android.material.divider.MaterialDivider
                         android:id="@+id/lock_method_divider"
                         android:layout_width="match_parent"
@@ -299,7 +299,7 @@
 
                     </LinearLayout>
 
-                    <!-- Lock trigger row — only visible when lock is enabled -->
+                    <!-- Lock trigger row - only visible when lock is enabled -->
                     <com.google.android.material.divider.MaterialDivider
                         android:id="@+id/lock_when_divider"
                         android:layout_width="match_parent"
