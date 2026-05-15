@@ -14,6 +14,9 @@ object AppLockManager {
     const val TYPE_DEVICE = "device"
     const val TYPE_PIN = "pin"
 
+    const val WHEN_EXIT = "exit"   // lock whenever app goes to background
+    const val WHEN_CLOSE = "close" // lock only when process is killed
+
     var isSessionUnlocked = false
         private set
 
@@ -30,6 +33,12 @@ object AppLockManager {
 
     fun getLockType(context: Context): String =
         SettingsManager(context).getString(SettingsManager.KEY_APP_LOCK_TYPE, TYPE_DEVICE)
+
+    fun getLockWhen(context: Context): String =
+        SettingsManager(context).getString(SettingsManager.KEY_APP_LOCK_WHEN, WHEN_EXIT)
+
+    fun shouldLockOnBackground(context: Context): Boolean =
+        isEnabled(context) && getLockWhen(context) == WHEN_EXIT
 
     fun canUseDeviceLock(context: Context): Boolean {
         val result = BiometricManager.from(context)

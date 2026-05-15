@@ -64,5 +64,6 @@ class SettingsManager(context: Context) {
         const val KEY_APP_LOCK_ENABLED = "pref_app_lock_enabled"
         const val KEY_APP_LOCK_TYPE = "pref_app_lock_type"
         const val KEY_APP_LOCK_PIN_HASH = "pref_app_lock_pin_hash"
+        const val KEY_APP_LOCK_WHEN = "pref_app_lock_when"
     }
 }

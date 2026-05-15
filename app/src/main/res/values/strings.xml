@@ -169,4 +169,8 @@
     <string name="lock_no_screen_lock_message">Please set up a screen lock (PIN, pattern, or password) in your device settings first.</string>
     <string name="lock_change_method_title">Change lock method</string>
     <string name="lock_change_pin">Change PIN</string>
+    <string name="lock_when">Lock trigger</string>
+    <string name="lock_when_exit">When leaving the app</string>
+    <string name="lock_when_close">Only when fully closed</string>
+    <string name="lock_when_title">When should the app lock?</string>
 </resources>

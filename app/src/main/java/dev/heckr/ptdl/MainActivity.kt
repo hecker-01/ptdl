@@ -116,7 +116,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
-        AppLockManager.lockSession()
+        if (AppLockManager.shouldLockOnBackground(this)) {
+            AppLockManager.lockSession()
+        }
     }
 
     @Suppress("OVERRIDE_DEPRECATION")

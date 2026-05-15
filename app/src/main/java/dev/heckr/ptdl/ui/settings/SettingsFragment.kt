@@ -170,6 +170,7 @@ class SettingsFragment : Fragment() {
         applyingLockState = false
         setLockMethodRowVisible(lockEnabled)
         updateLockMethodLabel()
+        updateLockWhenLabel()
 
         binding.switchAppLock.setOnCheckedChangeListener { _, isChecked ->
             if (applyingLockState) return@setOnCheckedChangeListener
@@ -188,11 +189,17 @@ class SettingsFragment : Fragment() {
         binding.lockMethodRow.setOnClickListener {
             showChangeLockMethodDialog()
         }
+
+        binding.lockWhenRow.setOnClickListener {
+            showLockWhenDialog()
+        }
     }
 
     private fun setLockMethodRowVisible(visible: Boolean) {
         binding.lockMethodDivider.isVisible = visible
         binding.lockMethodRow.isVisible = visible
+        binding.lockWhenDivider.isVisible = visible
+        binding.lockWhenRow.isVisible = visible
     }
 
     private fun updateLockMethodLabel() {
@@ -201,6 +208,35 @@ class SettingsFragment : Fragment() {
             if (type == AppLockManager.TYPE_PIN) R.string.lock_method_pin
             else R.string.lock_method_device
         )
+    }
+
+    private fun updateLockWhenLabel() {
+        val when_ = AppLockManager.getLockWhen(requireContext())
+        binding.lockWhenValue.text = getString(
+            if (when_ == AppLockManager.WHEN_CLOSE) R.string.lock_when_close
+            else R.string.lock_when_exit
+        )
+    }
+
+    private fun showLockWhenDialog() {
+        val options = arrayOf(
+            getString(R.string.lock_when_exit),
+            getString(R.string.lock_when_close)
+        )
+        val current = AppLockManager.getLockWhen(requireContext())
+        val currentIndex = if (current == AppLockManager.WHEN_CLOSE) 1 else 0
+        var selectedIndex = currentIndex
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.lock_when_title)
+            .setSingleChoiceItems(options, currentIndex) { _, which -> selectedIndex = which }
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                val chosen = if (selectedIndex == 1) AppLockManager.WHEN_CLOSE else AppLockManager.WHEN_EXIT
+                SettingsManager(requireContext()).putString(SettingsManager.KEY_APP_LOCK_WHEN, chosen)
+                updateLockWhenLabel()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
     }
 
     private fun showEnableLockDialog() {
@@ -263,6 +299,7 @@ class SettingsFragment : Fragment() {
                 applyingLockState = false
                 setLockMethodRowVisible(true)
                 updateLockMethodLabel()
+                updateLockWhenLabel()
             }
         )
     }
@@ -321,6 +358,7 @@ class SettingsFragment : Fragment() {
                     applyingLockState = false
                     setLockMethodRowVisible(true)
                     updateLockMethodLabel()
+                    updateLockWhenLabel()
                     dialog.dismiss()
                 }
             }
