@@ -1,28 +1,27 @@
 package dev.heckr.ptdl.settings
 
-import android.app.DownloadManager
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
-import android.database.Cursor
 import android.net.Uri
 import android.os.Build
-import android.os.Environment
-import android.os.Handler
-import android.os.Looper
-import android.provider.Settings
 import android.widget.Toast
-import dev.heckr.ptdl.R
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
+import dev.heckr.ptdl.R
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import android.os.Environment
+import java.io.File
+import java.io.FileOutputStream
+import java.net.HttpURLConnection
+import java.net.URL
 
-/**
- * Handles downloading and installing APK updates.
- * Delegates version checking to [UpdateChecker].
- */
 class AppUpdater(private val fragment: Fragment) {
 
     enum class State { IDLE, UPDATE_AVAILABLE, DOWNLOADING, DOWNLOADED, INSTALLING }
@@ -34,19 +33,16 @@ class AppUpdater(private val fragment: Fragment) {
     /** Progress callback: 0–100 for determinate, -1 for indeterminate */
     var onDownloadProgress: ((Int) -> Unit)? = null
 
-    private var downloadId: Long = -1
-    private var downloadReceiver: BroadcastReceiver? = null
-    private var pendingInstallFileName: String? = null
-    private val handler = Handler(Looper.getMainLooper())
-    private var downloadCheckRunnable: Runnable? = null
+    private var downloadJob: Job? = null
+    private var pendingInstallFile: File? = null
 
     private val installPermissionLauncher: ActivityResultLauncher<Intent> =
         fragment.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             val context = fragment.context ?: return@registerForActivityResult
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 if (context.packageManager.canRequestPackageInstalls()) {
-                    pendingInstallFileName?.let { installApk(context, it) }
-                    pendingInstallFileName = null
+                    pendingInstallFile?.let { installApk(context, it) }
+                    pendingInstallFile = null
                 } else {
                     Toast.makeText(context, R.string.install_permission_denied, Toast.LENGTH_SHORT).show()
                 }
@@ -74,7 +70,6 @@ class AppUpdater(private val fragment: Fragment) {
             State.UPDATE_AVAILABLE -> return true
             State.DOWNLOADING, State.INSTALLING -> { /* ignore */ }
             else -> {
-                // Trigger a fresh check via the singleton
                 notify(context.getString(R.string.checking_for_updates_status))
                 UpdateChecker.addListener(checkerListener)
                 UpdateChecker.check(context)
@@ -83,9 +78,7 @@ class AppUpdater(private val fragment: Fragment) {
         return false
     }
 
-    /**
-     * Start the download after the user confirms in the dialog.
-     */
+    /** Start the download after the user confirms in the dialog. */
     fun startDownload(context: Context) {
         val url = UpdateChecker.latestApkUrl
         val version = UpdateChecker.latestVersion
@@ -93,7 +86,7 @@ class AppUpdater(private val fragment: Fragment) {
             state = State.DOWNLOADING
             onDownloadProgress?.invoke(-1)
             notify(context.getString(R.string.download_initializing))
-            downloadAndInstallApk(context, url, version)
+            downloadApk(context, url, version)
         } else {
             notify(context.getString(R.string.update_info_missing))
         }
@@ -115,171 +108,125 @@ class AppUpdater(private val fragment: Fragment) {
 
     fun cleanup() {
         UpdateChecker.removeListener(checkerListener)
-        downloadCheckRunnable?.let { handler.removeCallbacks(it) }
-        unregisterReceiver(fragment.requireContext())
-    }
-
-    fun unregisterReceiver(context: Context) {
-        downloadReceiver?.let {
-            try { context.unregisterReceiver(it) } catch (_: Exception) {}
-        }
-        downloadReceiver = null
-    }
-
-    private fun cleanupDownload(context: Context) {
-        // Stop polling
-        downloadCheckRunnable?.let { handler.removeCallbacks(it) }
-        downloadCheckRunnable = null
-
-        // Cancel existing download
-        if (downloadId != -1L) {
-            try {
-                val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-                dm.remove(downloadId)
-            } catch (_: Exception) {}
-            downloadId = -1
-        }
-
-        // Unregister receiver
-        unregisterReceiver(context)
+        downloadJob?.cancel()
     }
 
     // -- Download --------------------------------------------------------
 
-    private fun downloadAndInstallApk(context: Context, apkUrl: String, version: String) {
-        try {
-            // Clean up any previous download attempt
-            cleanupDownload(context)
+    private fun downloadApk(context: Context, apkUrl: String, version: String) {
+        val updateDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+        updateDir.mkdirs()
+        val outFile = File(updateDir, "ptdl-$version.apk")
 
-            val fileName = "ptdl-$version.apk"
-
-            downloadReceiver = object : BroadcastReceiver() {
-                override fun onReceive(ctx: Context?, intent: Intent?) {
-                    val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
-                    if (id == downloadId) {
-                        downloadCheckRunnable?.let { handler.removeCallbacks(it) }
-                        handleDownloadComplete(context, fileName)
-                    }
-                }
-            }
-
-            ContextCompat.registerReceiver(
-                context,
-                downloadReceiver,
-                IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE),
-                ContextCompat.RECEIVER_NOT_EXPORTED
-            )
-
-            val request = DownloadManager.Request(Uri.parse(apkUrl))
-                .setTitle(context.getString(R.string.ptdl_update_title))
-                .setDescription(context.getString(R.string.downloading_version_format, version))
-                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
-                .setAllowedOverMetered(true)
-                .setAllowedOverRoaming(true)
-
-            val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-            downloadId = dm.enqueue(request)
-
-            startDownloadPolling(context, dm, fileName)
-        } catch (e: Exception) {
-            state = State.IDLE
-            val errorMsg = context.getString(R.string.download_setup_failed_format, e.message)
-            notify(errorMsg)
+        // If the file already exists and its size matches the expected size from GitHub,
+        // skip the download and go straight to installation.
+        val expectedSize = UpdateChecker.apkSizeBytes
+        if (outFile.exists() && expectedSize > 0L && outFile.length() == expectedSize) {
+            state = State.INSTALLING
+            onDownloadProgress?.invoke(-1)
+            notify(context.getString(R.string.installing_update_status))
+            installApk(context, outFile)
+            return
         }
-    }
 
-    private fun startDownloadPolling(context: Context, dm: DownloadManager, fileName: String) {
-        downloadCheckRunnable = object : Runnable {
-            override fun run() {
-                try {
-                    val cursor: Cursor? = dm.query(DownloadManager.Query().setFilterById(downloadId))
-                    if (cursor != null && cursor.moveToFirst()) {
-                        val statusIndex = cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS)
-                        val status = cursor.getInt(statusIndex)
-                        when (status) {
-                            DownloadManager.STATUS_SUCCESSFUL -> {
-                                cursor.close()
-                                downloadCheckRunnable?.let { handler.removeCallbacks(it) }
-                                handleDownloadComplete(context, fileName)
-                                return
-                            }
-                            DownloadManager.STATUS_FAILED -> {
-                                val reasonIndex = cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_REASON)
-                                val reason = cursor.getInt(reasonIndex)
-                                cursor.close()
-                                downloadCheckRunnable?.let { handler.removeCallbacks(it) }
-                                state = State.IDLE
-                                onDownloadProgress?.invoke(-1)
-                                val errorMsg = context.getString(R.string.download_failed_format, reason)
-                                notify(errorMsg)
-                                return
-                            }
-                            DownloadManager.STATUS_RUNNING -> {
-                                val bytesIdx = cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR)
-                                val totalIdx = cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES)
-                                if (bytesIdx >= 0 && totalIdx >= 0) {
-                                    val bytesDownloaded = cursor.getLong(bytesIdx)
-                                    val totalBytes = cursor.getLong(totalIdx)
-                                    if (totalBytes > 0) {
-                                        val percent = ((bytesDownloaded * 100) / totalBytes).toInt().coerceIn(0, 100)
-                                        handler.post {
-                                            onDownloadProgress?.invoke(percent)
-                                            notify(context.getString(R.string.download_progress_format, percent))
-                                        }
+        downloadJob?.cancel()
+        downloadJob = CoroutineScope(Dispatchers.IO).launch {
+            var conn: HttpURLConnection? = null
+            var success = false
+            try {
+                conn = URL(apkUrl).openConnection() as HttpURLConnection
+                conn.connectTimeout = 15_000
+                conn.readTimeout = 60_000
+                conn.requestMethod = "GET"
+                conn.connect()
+
+                val responseCode = conn.responseCode
+                if (responseCode != HttpURLConnection.HTTP_OK) {
+                    withContext(Dispatchers.Main) {
+                        state = State.IDLE
+                        onDownloadProgress?.invoke(-1)
+                        notify(context.getString(R.string.download_failed_format, responseCode))
+                    }
+                    return@launch
+                }
+
+                val totalBytes = conn.contentLengthLong
+                var bytesRead = 0L
+                var lastReportedPercent = -1
+
+                conn.inputStream.use { input ->
+                    FileOutputStream(outFile).use { output ->
+                        val buffer = ByteArray(8 * 1024)
+                        var n: Int
+                        while (input.read(buffer).also { n = it } != -1) {
+                            output.write(buffer, 0, n)
+                            bytesRead += n
+                            if (totalBytes > 0) {
+                                val percent = ((bytesRead * 100) / totalBytes).toInt().coerceIn(0, 100)
+                                if (percent != lastReportedPercent) {
+                                    lastReportedPercent = percent
+                                    withContext(Dispatchers.Main) {
+                                        onDownloadProgress?.invoke(percent)
+                                        notify(context.getString(R.string.download_progress_format, percent))
                                     }
                                 }
                             }
                         }
-                        cursor.close()
                     }
-                    handler.postDelayed(this, 500)
-                } catch (e: Exception) {
-                    downloadCheckRunnable?.let { handler.removeCallbacks(it) }
-                    state = State.IDLE
-                    val errorMsg = context.getString(R.string.download_polling_error_format, e.message)
-                    notify(errorMsg)
                 }
+
+                success = true
+                withContext(Dispatchers.Main) {
+                    state = State.INSTALLING
+                    onDownloadProgress?.invoke(-1)
+                    notify(context.getString(R.string.installing_update_status))
+                    installApk(context, outFile)
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    state = State.IDLE
+                    onDownloadProgress?.invoke(-1)
+                    notify(context.getString(R.string.download_setup_failed_format, e.message))
+                }
+            } finally {
+                conn?.disconnect()
+                if (!success) outFile.delete()
             }
         }
-        handler.post(downloadCheckRunnable!!)
-    }
-
-    private fun handleDownloadComplete(context: Context, fileName: String) {
-        unregisterReceiver(context)
-        state = State.INSTALLING
-        onDownloadProgress?.invoke(-1)
-        notify(context.getString(R.string.installing_update_status))
-        installApk(context, fileName)
     }
 
     // -- Install ---------------------------------------------------------
 
-    private fun installApk(context: Context, fileName: String) {
+    private fun installApk(context: Context, file: File) {
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 if (!context.packageManager.canRequestPackageInstalls()) {
-                    pendingInstallFileName = fileName
-                    val intent = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES)
+                    pendingInstallFile = file
+                    val intent = Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES)
                     intent.data = Uri.parse("package:${context.packageName}")
                     installPermissionLauncher.launch(intent)
                     return
                 }
             }
 
-            val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-            val apkUri = dm.getUriForDownloadedFile(downloadId)
-            if (apkUri == null) {
-                Toast.makeText(context, context.getString(R.string.installation_failed_format, "file not found"), Toast.LENGTH_LONG).show()
-                return
-            }
+            val apkUri = FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.fileprovider",
+                file
+            )
 
             val intent = Intent(Intent.ACTION_VIEW)
             intent.setDataAndType(apkUri, "application/vnd.android.package-archive")
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
             fragment.startActivity(intent)
         } catch (e: Exception) {
-            Toast.makeText(context, context.getString(R.string.installation_failed_format, e.message), Toast.LENGTH_LONG).show()
+            Toast.makeText(
+                context,
+                context.getString(R.string.installation_failed_format, e.message),
+                Toast.LENGTH_LONG
+            ).show()
         }
     }
 
